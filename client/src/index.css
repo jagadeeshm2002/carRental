@@ -5,13 +5,23 @@
   font-family: "GeraldtonMedium";
   src: url("/fonts/GeraldtonMedium.otf") format("opentype");
   font-weight: normal;
-  font-style: normal;
+  font-style: normal italic oblique small-caps;
+}
+
+@font-face {
+  font-family: "GeraldtonRegular";
+  src: url("/fonts/GeraldtonRegular.otf") format("opentype");
+  font-weight: normal;
+  font-style: normal italic oblique small-caps;
 }
 @layer base {
   body {
-    @apply font-Geraldton;
+    font-family: var(--font-family-base);
   }
 }
+/* ::-webkit-scrollbar {
+  display: none;
+} */
 /* body {
   font-family: "GeraldtonMedium", sans-serif;
 } */
@@ -19,7 +29,7 @@
 @layer base {
   :root {
     --background: 0 0% 100%;
-    --foreground: 211 82% 45%;
+    --foreground: 240 10% 3.9%;
     --card: 0 0% 100%;
     --card-foreground: 240 10% 3.9%;
     --popover: 0 0% 100%;
