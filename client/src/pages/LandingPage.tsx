@@ -133,7 +133,7 @@ const LandingPage: React.FC = () => {
                 Sign in
               </Button>
             </Link>
-            <Link to="/signup">
+            <Link to="/register">
               <Button variant={"default"}>Sign up</Button>
             </Link>
           </div>
@@ -167,9 +167,11 @@ const LandingPage: React.FC = () => {
                   Compare and book cars in real time with a seamless rental
                   experience
                 </p>
-                <Button variant={"default"} className="px-6">
-                  Get started
-                </Button>
+                <Link to="/search">
+                  <Button variant={"default"} className="px-6">
+                    Get started
+                  </Button>
+                </Link>
               </div>
               <div className="w-full   md:w-1/2 relative min-h-[300px] h-full overflow-visible -z-0 overflow-y-clip">
                 <div className="absolute md:w-[60vw] w-[80vw]  h-[60vh] md:h-[70vh] top-[-0vw] md:top-[-10vw] right-[-20vw] md:right-[-40vw] rotate-45 select-none ">

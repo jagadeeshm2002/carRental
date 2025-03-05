@@ -1,20 +1,18 @@
 
-// import { Outlet } from 'react-router-dom';
-
-
+import { Routes, Route } from 'react-router-dom';
 import LandingPage from './pages/LandingPage';
-// import NavBar from './components/navBar';
-
-// const CustomLayout = () => <>
-//   <NavBar />
-//   <Outlet /></>;
+import Login from './pages/Login';
+import Register from './pages/Register';
 
 function App() {
-
-
   return (
     <div className='font-Geraldton'>
-      <LandingPage /> </div>
+      <Routes>
+        <Route path="/" element={<LandingPage />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+      </Routes>
+    </div>
   );
 }
 
