@@ -103,6 +103,7 @@ const carSchema = new Schema<ICar>(
       trim: true,
       default: Category.ECONOMY,
     },
+    
   },
   {
     timestamps: true, // Adds createdAt and updatedAt fields

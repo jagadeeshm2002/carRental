@@ -54,3 +54,8 @@ export enum Type {
     CARD = "Card",
     UPI = "UPI",
   }
+  export enum OrderStatus {
+    PENDING = "Pending",
+    CONFIRMED = "Confirmed",
+    CANCELLED = "Cancelled",
+  }

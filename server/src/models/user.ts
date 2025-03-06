@@ -27,6 +27,7 @@ export interface IUser extends Document {
   password: string;
   role: Role;
   phone?: string;
+  favourites?: mongoose.Types.ObjectId[];
   createdAt: Date;
   updatedAt: Date;
 
@@ -110,6 +111,12 @@ const userSchema = new Schema<IUser>(
       type: String,
       trim: true,
     },
+    favourites: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "Car",
+      },
+    ],
   },
   {
     timestamps: true, // Automatically add createdAt and updatedAt fields
