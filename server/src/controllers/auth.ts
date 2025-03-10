@@ -34,7 +34,14 @@ export const signinController = async (req: Request, res: Response) => {
       httpOnly: true,
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
-    res.json({ acessToken });
+    const response = {
+      id: user._id,
+      email: user.email,
+      role: user.role,
+      name: user.name,
+      acessToken,
+    };
+    res.json({ response });
   } catch (error) {
     res.status(500).json({ message: "Internal server error" });
     return;
