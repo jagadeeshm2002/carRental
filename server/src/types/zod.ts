@@ -1,19 +1,13 @@
 import { z } from "zod";
 import { Type } from "./enums";
 
-export const registerSchema = z
-  .object({
-    name: z.string().min(2, { message: "Name must be at least 2 characters" }),
-    email: z.string().email({ message: "Invalid email address" }),
-    password: z
-      .string()
-      .min(6, { message: "Password must be at least 6 characters" }),
-    confirmPassword: z.string(),
-  })
-  .refine((data) => data.password === data.confirmPassword, {
-    message: "Passwords don't match",
-    path: ["confirmPassword"],
-  });
+export const registerSchema = z.object({
+  name: z.string().min(2, { message: "Name must be at least 2 characters" }),
+  email: z.string().email({ message: "Invalid email address" }),
+  password: z
+    .string()
+    .min(6, { message: "Password must be at least 6 characters" }),
+});
 
 export const signinSchema = z.object({
   email: z.string().email({ message: "Invalid email address" }),
@@ -65,8 +59,8 @@ export const carSchema = z.object({
   imageUrl: z.array(z.string()).min(1, { message: "Image URL is required" }),
   location: z.string().min(1, { message: "Location is required" }),
   coordinates: z.object({
-    latitude: z.number().min(1, { message: "Latitude is required" }),
-    longitude: z.number().min(1, { message: "Longitude is required" }),
+    latitude: z.number({ message: "Latitude is required" }),
+    longitude: z.number({ message: "Longitude is required" }),
   }),
   features: z.array(z.string()).optional(),
   category: z.string().min(1, { message: "Category is required" }),
@@ -76,16 +70,17 @@ export const carSearchSchema = z.object({
   modelName: z.string().optional(),
   year: z.number().min(2000).max(2026).optional(),
   type: z.nativeEnum(Type).optional(),
-  minDistance: z.number().min(0).optional(), // Minimum distance filter
-  maxDistance: z.number().min(0).optional(), // Maximum distance filter
+  minDistance: z.number().min(0).optional(),
+  maxDistance: z.number().min(0).optional(),
   minDiscountedPrice: z.number().min(0).optional(),
   maxDiscountedPrice: z.number().min(0).optional(),
   location: z.string().optional(),
-  features: z.array(z.string()).optional(), // Allows searching based on features
+  features: z.array(z.string()).optional(),
   category: z.string().optional(),
-  sortBy: z.enum(["price", "year", "distance", "rating"]).optional(), // Sorting criteria
-  sortOrder: z.enum(["asc", "desc"]).optional(), // Sorting order
+  sortBy: z.enum(["price", "year", "distance", "rating"]).optional(),
+  sortOrder: z.enum(["asc", "desc"]).optional(),
 });
+export const updateschema = carSchema.omit({ user: true }).partial();
 
 export const reviewsSchema = z.object({
   user: z.string({ message: "User is required" }),

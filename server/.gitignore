@@ -8,7 +8,6 @@ node_modules/
 .env.test
 .env.production
 .env.*
-/server/.env
 
 # IDE files
 .vscode/
@@ -19,5 +18,3 @@ node_modules/
 # OS files
 .DS_Store
 Thumbs.db
-server/.env
-server/.env

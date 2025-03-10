@@ -3,18 +3,23 @@ import { signinSchema, registerSchema } from "../types/zod";
 import Jwt from "jsonwebtoken";
 import User from "../models/user";
 export const signinController = async (req: Request, res: Response) => {
-  const data = signinSchema.safeParse(req.params);
+  const data = signinSchema.safeParse(req.query);
   if (data.error) {
     res.status(400).json(data.error);
     return;
   }
   try {
-    const user = await User.findOne({ email: data.data.email });
+    const user = await User.findOne(
+      { email: data.data.email },
+      { password: 1 }
+    );
     if (!user) {
       res.status(401).json({ message: "Invalid email " });
       return;
     }
+
     const isMatch = await user.comparePassword(data.data.password);
+
     if (!isMatch) {
       res.status(401).json({ message: "Invalid email or password" });
       return;
@@ -49,7 +54,7 @@ export const registerController = async (req: Request, res: Response) => {
       return;
     }
     const user = await User.create(data.data);
-                                                             
+
     res.status(201).json({ message: "User created successfully" });
   } catch (error) {
     res.status(500).json({ message: "Internal server error" });
@@ -57,6 +62,7 @@ export const registerController = async (req: Request, res: Response) => {
 };
 export const refreshController = async (req: Request, res: Response) => {
   const refeshToken = req.cookies.refreshToken;
+
   if (!refeshToken) {
     res.status(401).json({ message: "Unauthorized" });
     return;

@@ -5,7 +5,6 @@ import { Type, Category, Duration, Features } from "../types/enums";
 
 export interface ICar extends Document {
   user: mongoose.Types.ObjectId;
-  reviews: mongoose.Types.ObjectId[];
   modelName: string;
   year: number;
   type: Type;
@@ -32,12 +31,7 @@ const carSchema = new Schema<ICar>(
       ref: "User",
       required: [true, "User is required"],
     },
-    reviews: [
-      {
-        type: Schema.Types.ObjectId,
-        ref: "Review",
-      },
-    ],
+    
     modelName: {
       type: String,
       required: [true, "Car model is required"],

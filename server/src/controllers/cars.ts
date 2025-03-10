@@ -1,19 +1,29 @@
 import { Request, Response } from "express";
-import { carSchema, reviewsSchema } from "../types/zod";
+import { carSchema, reviewsSchema, updateschema } from "../types/zod";
 import Car from "../models/car";
 import { carSearchSchema } from "../types/zod";
 import Review from "../models/review";
 import Order from "../models/order";
+import User from "../models/user";
+import { z } from "zod";
+import mongoose from "mongoose";
 
 export const createCar = async (req: Request, res: Response) => {
   const data = carSchema.safeParse(req.body);
-  console.log(data);
+
   if (data.error) {
     res.status(400).json(data.error);
     return;
   }
+
   try {
+    const user = await User.findById(data.data.user);
+    if (!user || user.role !== "owner") {
+      res.status(400).json({ message: "User not found" });
+      return;
+    }
     const car = await Car.create(data.data);
+
     if (!car) {
       res.status(400).json({ message: "Car not created" });
       return;
@@ -26,12 +36,12 @@ export const createCar = async (req: Request, res: Response) => {
 };
 
 export const getCars = async (req: Request, res: Response) => {
-  const prams = carSearchSchema.safeParse(req.query);
-  console.log(prams);
-  if (prams.error) {
-    res.status(400).json(prams.error);
-    return;
+  const params = carSearchSchema.safeParse(req.body);
+
+  if (!params.success) {
+    return res.status(400).json({ errors: params.error.format() });
   }
+
   try {
     const {
       modelName,
@@ -46,50 +56,83 @@ export const getCars = async (req: Request, res: Response) => {
       category,
       sortBy,
       sortOrder,
-    } = prams.data;
-    const query: any = {};
+    } = params.data;
+
     // Build the query object based on the search parameters
-    if (modelName) query.modelName = modelName; // Exact match for model name
-    if (year) query.year = year; // Exact match for year
-    if (type) query.type = type; // Exact match for car type
+    const query: Record<string, any> = {};
 
-    // Range query for distance
-    if (minDistance) query.distance = { $gte: minDistance };
-    if (maxDistance) query.distance = { ...query.distance, $lte: maxDistance };
+    // Text matching queries
+    if (modelName) query.modelName = { $regex: modelName, $options: "i" }; // Case-insensitive partial match
+    if (type) query.type = type;
+    if (location) query.location = { $regex: location, $options: "i" }; // Case-insensitive partial match
+    if (category) query.category = { $regex: category, $options: "i" }; // Case-insensitive partial match
+    if (year) query.year = year;
 
-    // Range query for discounted price
-    if (minDiscountedPrice)
-      query.discountedPrice = { $gte: minDiscountedPrice };
-    if (maxDiscountedPrice)
-      query.discountedPrice = {
-        ...query.discountedPrice,
-        $lte: maxDiscountedPrice,
-      };
-
-    if (location) query.location = location; // Exact match for location
-    if (features) query.features = { $in: features }; // Match any of the specified features
-    if (category) query.category = category; // Exact match for category
-
-    // Sorting options
-    if (sortBy) query.sortBy = sortBy;
-    if (sortOrder) query.sortOrder = sortOrder;
-
-    // This method efficiently builds a flexible query based on user input
-    const cars = Car.find(query);
-    if (!cars) {
-      res.status(400).json({ message: "Cars not found" });
-      return;
+    // Numeric range queries
+    if (minDistance !== undefined || maxDistance !== undefined) {
+      query.distance = {};
+      if (minDistance !== undefined) query.distance.$gte = minDistance;
+      if (maxDistance !== undefined) query.distance.$lte = maxDistance;
     }
-    res.status(200).json(cars);
-    return;
+
+    if (minDiscountedPrice !== undefined || maxDiscountedPrice !== undefined) {
+      query.discountedPrice = {};
+      if (minDiscountedPrice !== undefined)
+        query.discountedPrice.$gte = minDiscountedPrice;
+      if (maxDiscountedPrice !== undefined)
+        query.discountedPrice.$lte = maxDiscountedPrice;
+    }
+
+    // Array contains query
+    if (features && features.length > 0) {
+      query.features = { $all: features }; // Match all specified features
+    }
+
+    // Create sort options
+    const sortOptions: Record<string, 1 | -1> = {};
+    if (sortBy) {
+      sortOptions[sortBy] = sortOrder === "desc" ? -1 : 1;
+    }
+
+    // Execute query with pagination
+    const page = Number(req.query.page) || 1;
+    const limit = Number(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
+
+    const [cars, totalCount] = await Promise.all([
+      Car.find(query).sort(sortOptions).skip(skip).limit(limit).lean(),
+      Car.countDocuments(query),
+    ]);
+
+    if (!cars || cars.length === 0) {
+      return res
+        .status(404)
+        .json({ message: "No cars found matching your criteria" });
+    }
+
+    return res.status(200).json({
+      cars,
+      pagination: {
+        total: totalCount,
+        page,
+        limit,
+        pages: Math.ceil(totalCount / limit),
+      },
+    });
   } catch (error) {
-    res.status(500).json({ message: "Internal server error" });
-    return;
+    console.error("Error in getCars controller:", error);
+    return res.status(500).json({
+      message: "Internal server error",
+      error: process.env.NODE_ENV === "development" ? String(error) : undefined,
+    });
   }
 };
 
 export const getCar = async (req: Request, res: Response) => {
-  const id = req.params.id;
+  const id: string = req.params.id;
+  if (!id || !mongoose.Types.ObjectId.isValid(id)) {
+    return res.status(400).json({ message: "Id is required" });
+  }
   try {
     const car = await Car.findById(id);
     const orderedDate = await Order.find({
@@ -107,9 +150,13 @@ export const getCar = async (req: Request, res: Response) => {
   }
 };
 
+
 export const updateCar = async (req: Request, res: Response) => {
-  const id = req.params.id;
-  const data = carSchema.safeParse(req.body);
+  const id: string = req.params.id;
+  if (!id || !mongoose.Types.ObjectId.isValid(id)) {
+    return res.status(400).json({ message: "Id is required" });
+  }
+  const data = updateschema.safeParse(req.body);
   if (data.error) {
     res.status(400).json(data.error);
     return;
@@ -127,6 +174,9 @@ export const updateCar = async (req: Request, res: Response) => {
 
 export const deleteCar = async (req: Request, res: Response) => {
   const id = req.params.id;
+  if (!id || !mongoose.Types.ObjectId.isValid(id)) {
+    return res.status(400).json({ message: "Id is required" });
+  }
   try {
     const car = await Car.findByIdAndDelete(id);
     if (!car) {
@@ -137,6 +187,9 @@ export const deleteCar = async (req: Request, res: Response) => {
     res.status(500).json({ message: "Internal server error" });
   }
 };
+
+
+
 export const createReview = async (req: Request, res: Response) => {
   const data = reviewsSchema.safeParse(req.body);
   if (!data.success) {
@@ -154,4 +207,7 @@ export const createReview = async (req: Request, res: Response) => {
   } catch (error) {
     res.status(500).json({ message: "Internal server error" });
   }
+};
+export const getReviews = async (req: Request, res: Response) => {
+  res.send("getReviews");
 };
