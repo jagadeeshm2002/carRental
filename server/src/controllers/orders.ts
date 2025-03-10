@@ -1,19 +1,9 @@
 import { Request, Response } from "express";
-import { z } from "zod";
-import Car from "../models/car";
 import Order from "../models/order";
+import { getOrdersSchema, orderSchema, updateOrderSchema } from "../types/zod";
+import mongoose from "mongoose";
 
-const orderSchema = z.object({
-  car: z.string({ message: "Car is required" }),
-  pickupDate: z.date({ message: "Pickup date is required" }),
-  returnDate: z.date({ message: "Return date is required" }),
-  totalDays: z.number({ message: "Total days is required" }),
-  totalAmount: z.number({ message: "Total amount is required" }),
-  orderStatus: z.string({ message: "Order status is required" }),
-  user: z.string({ message: "User is required" }),
-});
-
-const creatOrder = async (req: Request, res: Response) => {
+export const createOrder = async (req: Request, res: Response) => {
   const data = orderSchema.safeParse(req.body);
 
   if (!data.success) {
@@ -22,7 +12,7 @@ const creatOrder = async (req: Request, res: Response) => {
   }
   try {
     const { car, pickupDate, returnDate } = data.data;
-    if (!isCarAvailable(car, pickupDate, returnDate)) {
+    if (!(await isCarAvailable(car, pickupDate, returnDate))) {
       return res.status(400).json({ message: "Car is not available" });
     }
     const order = await Order.create(data.data);
@@ -45,14 +35,14 @@ const isCarAvailable = async (
       { returnDate: { $gte: pickupDate, $lte: returnDate } },
     ],
   });
+  if (overlappingOrders.length > 0) {
+    return false;
+  }
 
-  return overlappingOrders.length === 0; // Returns true if no overlapping bookings
+  return true; // Returns true if no overlapping bookings
 };
 
-const getOrdersSchema = z.object({
-  user: z.string({ message: "User is required" }),
-});
-const getOrders = async (req: Request, res: Response) => {
+export const getOrders = async (req: Request, res: Response) => {
   const data = getOrdersSchema.safeParse(req.query);
   if (!data.success) {
     res.status(400).json({ errors: data.error.errors });
@@ -60,6 +50,7 @@ const getOrders = async (req: Request, res: Response) => {
   }
   try {
     const { user } = data.data;
+
     const orders = await Order.find({ user: user });
     if (!orders) {
       return res.status(404).json({ message: "Orders not found" });
@@ -70,22 +61,23 @@ const getOrders = async (req: Request, res: Response) => {
   }
 };
 
-const getOrder = async (req: Request, res: Response) => {
+export const getOrder = async (req: Request, res: Response) => {
   res.send("getOrder");
 };
-const updateOrderSchema = z.object({
-  orderStatus: z.string({ message: "Order status is required" }),
-  id: z.string({ message: "Id is required" }),
-});
-const updateOrder = async (req: Request, res: Response) => {
+
+export const updateOrder = async (req: Request, res: Response) => {
   const data = updateOrderSchema.safeParse(req.body);
+  const id = req.params.id;
+  if (!id && mongoose.Types.ObjectId.isValid(id)) {
+    return res.status(400).json({ message: "Id is required" });
+  }
   if (!data.success) {
     res.status(400).json({ errors: data.error.errors });
     return;
   }
   try {
     const car = await Order.findByIdAndUpdate(
-      { _id: data.data.id },
+      { _id: id },
       { orderStatus: data.data.orderStatus },
       { new: true }
     );

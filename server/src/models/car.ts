@@ -21,6 +21,9 @@ export interface ICar extends Document {
   };
   features: Features[];
   category: Category;
+  active: boolean;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 // Car Schema
@@ -96,6 +99,22 @@ const carSchema = new Schema<ICar>(
       required: [true, "Category is required"],
       trim: true,
       default: Category.ECONOMY,
+    },
+    active: {
+      type: Boolean,
+      default: true,
+    },
+    coupon: {
+      type: String,
+      trim: true,
+    },
+    createdAt: {
+      type: Date,
+      default: Date.now,
+    },
+    updatedAt: {
+      type: Date,
+      default: Date.now,
     },
     
   },

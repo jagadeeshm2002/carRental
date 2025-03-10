@@ -129,6 +129,7 @@ export const getCars = async (req: Request, res: Response) => {
 };
 
 export const getCar = async (req: Request, res: Response) => {
+
   const id: string = req.params.id;
   if (!id || !mongoose.Types.ObjectId.isValid(id)) {
     return res.status(400).json({ message: "Id is required" });
@@ -149,7 +150,6 @@ export const getCar = async (req: Request, res: Response) => {
     res.status(500).json({ message: "Internal server error" });
   }
 };
-
 
 export const updateCar = async (req: Request, res: Response) => {
   const id: string = req.params.id;
@@ -172,32 +172,35 @@ export const updateCar = async (req: Request, res: Response) => {
   }
 };
 
-export const deleteCar = async (req: Request, res: Response) => {
-  const id = req.params.id;
-  if (!id || !mongoose.Types.ObjectId.isValid(id)) {
-    return res.status(400).json({ message: "Id is required" });
-  }
-  try {
-    const car = await Car.findByIdAndDelete(id);
-    if (!car) {
-      return res.status(404).json({ message: "Car not found" });
-    }
-    res.status(200).json({ message: "Car deleted successfully" });
-  } catch (error) {
-    res.status(500).json({ message: "Internal server error" });
-  }
-};
-
-
+// export const deleteCar = async (req: Request, res: Response) => {
+//   const id = req.params.id;
+//   if (!id || !mongoose.Types.ObjectId.isValid(id)) {
+//     return res.status(400).json({ message: "Id is required" });
+//   }
+//   try {
+//     const car = await Car.findByIdAndDelete(id);
+//     if (!car) {
+//       return res.status(404).json({ message: "Car not found" });
+//     }
+//     res.status(200).json({ message: "Car deleted successfully" });
+//   } catch (error) {
+//     res.status(500).json({ message: "Internal server error" });
+//   }
+// };
 
 export const createReview = async (req: Request, res: Response) => {
+  const car = req.params.id;
+  if (!car || !mongoose.Types.ObjectId.isValid(car)) {
+    return res.status(400).json({ message: "Id is required" });
+  }
+
   const data = reviewsSchema.safeParse(req.body);
   if (!data.success) {
     res.status(400).json(data.error);
     return;
   }
   try {
-    const { user, car, rating, comment } = data.data;
+    const { user, rating, comment } = data.data;
     const review = await Review.create({ user, car, rating, comment });
     if (!review) {
       res.status(400).json({ message: "Review not created" });
@@ -209,5 +212,17 @@ export const createReview = async (req: Request, res: Response) => {
   }
 };
 export const getReviews = async (req: Request, res: Response) => {
-  res.send("getReviews");
+  const id = req.params.id;
+  if (!id || !mongoose.Types.ObjectId.isValid(id)) {
+    return res.status(400).json({ message: "Id is required" });
+  }
+  try {
+    const reviews = await Review.find({ car: id });
+    if (!reviews) {
+      return res.status(404).json({ message: "Reviews not found" });
+    }
+    res.status(200).json(reviews);
+  } catch (error) {
+    res.status(500).json({ message: "Internal server error" });
+  }
 };

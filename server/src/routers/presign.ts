@@ -1,10 +1,9 @@
 import { Router } from "express";
+import { presign } from "../controllers/presign";
 
 const router: Router = Router();
 
-router.get("/", (req, res) => {
-  res.send("Hello World!");
-});
+router.get("/", presign);
 
 
 export default router;

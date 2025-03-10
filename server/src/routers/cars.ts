@@ -1,14 +1,21 @@
 import { Router } from "express";
-import { createCar, createReview, getCar, getCars, getReviews, updateCar } from "../controllers/cars";
+import {
+  createCar,
+  createReview,
+  getCar,
+  getCars,
+  getReviews,
+  updateCar,
+} from "../controllers/cars";
 
 const router: Router = Router();
 
 router.post("/", createCar);
 router.get("/", getCars);
-router.post("/reviews",createReview);
-router.get("/reviews/:id",getReviews);
+router.post("/:id/reviews", createReview);
+router.get("/:id/reviews", getReviews);
 router.get("/:id", getCar);
 router.put("/:id", updateCar);
-router.delete("/:id");
+// router.delete("/:id");
 
 export default router;

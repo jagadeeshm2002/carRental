@@ -84,10 +84,22 @@ export const updateschema = carSchema.omit({ user: true }).partial();
 
 export const reviewsSchema = z.object({
   user: z.string({ message: "User is required" }),
-  car: z.string({ message: "Car is required" }),
   rating: z
     .number()
     .min(1, { message: "Rating is required" })
     .max(5, { message: "Rating is required" }),
   comment: z.string().optional(),
+});
+export const orderSchema = z.object({
+  car: z.string({ message: "Car is required" }),
+  pickupDate: z.coerce.date({ message: "Pickup date is required" }),
+  returnDate: z.coerce.date({ message: "Return date is required" }),
+  totalDays: z.coerce.number({ message: "Total days is required" }),
+  totalAmount: z.number({ message: "Total amount is required" }),
+  user: z.string({ message: "User is required" }),
+});
+export const getOrdersSchema = orderSchema.pick({ user: true });
+
+export const updateOrderSchema = z.object({
+  orderStatus: z.enum(["pending", "confirmed", "cancelled"]),
 });

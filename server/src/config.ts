@@ -3,7 +3,7 @@ import path from "path";
 
 // Load environment variables from .env file
 const result = dotenv.config({
-  path: path.resolve(__dirname, "../.env"),
+  path: path.resolve(__dirname, "../.env.local"),
 });
 
 if (result.error) {
@@ -19,6 +19,8 @@ if (!process.env.DATABASE_URL) {
 export const config = {
   database: process.env.DATABASE_URL,
   port: process.env.PORT ? parseInt(process.env.PORT, 10) : 3000,
+  aws_access_key_id: process.env.AWS_ACCESS_KEY_ID,
+  aws_secret_access_key: process.env.AWS_SECRET_ACCESS_KEY,
 } as const;
 
 export const database: string = config.database;
