@@ -1,51 +1,82 @@
-import { createContext, useContext, useState, ReactNode } from "react";
+// context.tsx
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  ReactNode,
+} from "react";
+import { updateToken } from "@/api/client";
 
-// Define interfaces for your data types
+// Issue: The current implementation doesn't persist the user state across page reloads.
+// When the page is refreshed, the user state is reset to null, causing the user to be logged out.
+// To fix this, we need to initialize the user state from localStorage if available.
+
+// Define your User type
 interface User {
-  _id?: string;
-  name?: string;
-  email?: string;
-  role?: string;
+  id: string;
+  email: string;
+  role: string;
+  name: string;
 }
 
-// Define the context type
 interface GlobalContextType {
-  user: User;
-  updateUser: (user: User) => void;
+  user: User | null;
+  isLoggedIn: boolean;
+  updateUser: (user: User | null) => void;
+  token: string | null;
+  setToken: (token: string | null) => void;
 }
 
 // Create the context
- const GlobalContext = createContext<GlobalContextType>({
-  user: {},
-  updateUser: () => {},
-});
+const GlobalContext = createContext<GlobalContextType | undefined>(undefined);
 
-// Create context provider component
-const GlobalContextProvider = ({
+export const GlobalContextProvider = ({
   children,
 }: {
   children: ReactNode;
 }) => {
-  const [user, setUser] = useState<User>(() => {
-    const user = localStorage.getItem("user");
-    if (user) {
-      return JSON.parse(user);
-    }
-    return {};
+  const [user, setUser] = useState<User | null>(() => {
+    // Initialize user from localStorage if available
+    const storedUser = localStorage.getItem("user");
+    return storedUser ? JSON.parse(storedUser) : null;
   });
-  const updateUser = (user: User) => {
-    localStorage.setItem("user", JSON.stringify(user));
-    setUser(user);
+  const [token, setToken] = useState<string | null>(() => {
+    // Initialize from localStorage if available
+    return localStorage.getItem("jwt_token");
+  });
+  const isLoggedIn = !!user;
+
+  const updateUser = (newUser: User | null) => {
+    setUser(newUser);
+    if (newUser) {
+      localStorage.setItem("user", JSON.stringify(newUser));
+    } else {
+      localStorage.removeItem("user");
+    }
   };
 
+  // Update token whenever it changes
+  useEffect(() => {
+    updateToken(token);
+  }, [token]);
+
   return (
-    <GlobalContext.Provider value={{ user, updateUser }}>
+    <GlobalContext.Provider
+      value={{
+        user,
+        isLoggedIn,
+        updateUser,
+        token,
+        setToken,
+      }}
+    >
       {children}
     </GlobalContext.Provider>
   );
 };
 
-// Custom hook to use the context
+// Custom hook to use the global context
 export const useGlobalContext = () => {
   const context = useContext(GlobalContext);
   if (context === undefined) {
@@ -55,4 +86,3 @@ export const useGlobalContext = () => {
   }
   return context;
 };
-export default GlobalContextProvider;

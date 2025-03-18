@@ -11,12 +11,14 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { registerFormSchema } from "@/schemas/zodSchema";
+import axios from "axios";
 
-
+import { toast } from "sonner";
 
 export default function Register() {
+  const navigate = useNavigate();
   const form = useForm<z.infer<typeof registerFormSchema>>({
     resolver: zodResolver(registerFormSchema),
     defaultValues: {
@@ -27,9 +29,32 @@ export default function Register() {
     },
   });
 
-  const onSubmit = (data: z.infer<typeof registerFormSchema>) => {
-    console.log(data);
-    // Add your registration logic here
+  const onSubmit = async (data: z.infer<typeof registerFormSchema>) => {
+    try {
+      const response = await axios.post(
+        "http://localhost:3000/api/v1/auth/",
+        data
+      );
+      if (response.status >= 200 && response.status < 300) {
+        toast.success(response.data.message || "Registration successful");
+        // Optionally, redirect to login page or dashboard
+
+        setTimeout(() => {
+          navigate("/login");
+        }, 1000);
+      } else {
+        toast.error(response.data.message || "Registration failed");
+      }
+    } catch (error) {
+      if (axios.isAxiosError(error) && error.response) {
+        toast.error(error.response.data.message || "Failed to register");
+      } else if (error instanceof Error) {
+        toast.error(error.message || "An unexpected error occurred");
+      } else {
+        toast.error("An unexpected error occurred");
+      }
+      console.error("Registration error:", error);
+    }
   };
 
   return (
@@ -79,7 +104,11 @@ export default function Register() {
                 <FormItem>
                   <FormLabel>Password</FormLabel>
                   <FormControl>
-                    <Input type="password" placeholder="Create a password" {...field} />
+                    <Input
+                      type="password"
+                      placeholder="Create a password"
+                      {...field}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -93,7 +122,11 @@ export default function Register() {
                 <FormItem>
                   <FormLabel>Confirm Password</FormLabel>
                   <FormControl>
-                    <Input type="password" placeholder="Confirm your password" {...field} />
+                    <Input
+                      type="password"
+                      placeholder="Confirm your password"
+                      {...field}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

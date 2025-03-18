@@ -36,7 +36,7 @@ export const createCar = async (req: Request, res: Response) => {
 };
 
 export const getCars = async (req: Request, res: Response) => {
-  const params = carSearchSchema.safeParse(req.body);
+  const params = carSearchSchema.safeParse(req.query);
 
   if (!params.success) {
     return res.status(400).json({ errors: params.error.format() });
@@ -47,13 +47,13 @@ export const getCars = async (req: Request, res: Response) => {
       modelName,
       year,
       type,
-      minDistance,
-      maxDistance,
-      minDiscountedPrice,
-      maxDiscountedPrice,
+      // minDistance,
+      // maxDistance,
+      // minDiscountedPrice,
+      // maxDiscountedPrice,
       location,
-      features,
-      category,
+      // features,
+      // category,
       sortBy,
       sortOrder,
     } = params.data;
@@ -65,28 +65,28 @@ export const getCars = async (req: Request, res: Response) => {
     if (modelName) query.modelName = { $regex: modelName, $options: "i" }; // Case-insensitive partial match
     if (type) query.type = type;
     if (location) query.location = { $regex: location, $options: "i" }; // Case-insensitive partial match
-    if (category) query.category = { $regex: category, $options: "i" }; // Case-insensitive partial match
+    // if (category) query.category = { $regex: category, $options: "i" }; // Case-insensitive partial match
     if (year) query.year = year;
 
     // Numeric range queries
-    if (minDistance !== undefined || maxDistance !== undefined) {
-      query.distance = {};
-      if (minDistance !== undefined) query.distance.$gte = minDistance;
-      if (maxDistance !== undefined) query.distance.$lte = maxDistance;
-    }
+    // if (minDistance !== undefined || maxDistance !== undefined) {
+    //   query.distance = {};
+    //   if (minDistance !== undefined) query.distance.$gte = minDistance;
+    //   if (maxDistance !== undefined) query.distance.$lte = maxDistance;
+    // }
 
-    if (minDiscountedPrice !== undefined || maxDiscountedPrice !== undefined) {
-      query.discountedPrice = {};
-      if (minDiscountedPrice !== undefined)
-        query.discountedPrice.$gte = minDiscountedPrice;
-      if (maxDiscountedPrice !== undefined)
-        query.discountedPrice.$lte = maxDiscountedPrice;
-    }
+    // if (minDiscountedPrice !== undefined || maxDiscountedPrice !== undefined) {
+    //   query.discountedPrice = {};
+    //   if (minDiscountedPrice !== undefined)
+    //     query.discountedPrice.$gte = minDiscountedPrice;
+    //   if (maxDiscountedPrice !== undefined)
+    //     query.discountedPrice.$lte = maxDiscountedPrice;
+    // }
 
     // Array contains query
-    if (features && features.length > 0) {
-      query.features = { $all: features }; // Match all specified features
-    }
+    // if (features && features.length > 0) {
+    //   query.features = { $all: features }; // Match all specified features
+    // }
 
     // Create sort options
     const sortOptions: Record<string, 1 | -1> = {};
@@ -129,7 +129,6 @@ export const getCars = async (req: Request, res: Response) => {
 };
 
 export const getCar = async (req: Request, res: Response) => {
-
   const id: string = req.params.id;
   if (!id || !mongoose.Types.ObjectId.isValid(id)) {
     return res.status(400).json({ message: "Id is required" });

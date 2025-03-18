@@ -21,6 +21,7 @@ export const config = {
   port: process.env.PORT ? parseInt(process.env.PORT, 10) : 3000,
   aws_access_key_id: process.env.AWS_ACCESS_KEY_ID,
   aws_secret_access_key: process.env.AWS_SECRET_ACCESS_KEY,
+  jwt_secret: process.env.JWT_SECRET,
 } as const;
 
 export const database: string = config.database;

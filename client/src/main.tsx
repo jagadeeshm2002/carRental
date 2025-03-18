@@ -4,7 +4,7 @@ import { BrowserRouter } from "react-router-dom";
 
 import "./index.css";
 import App from "./App.tsx";
-import  GlobalContextProvider  from "./context/index.tsx";
+import { GlobalContextProvider } from "./context/index.tsx";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>

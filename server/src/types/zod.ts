@@ -68,15 +68,15 @@ export const carSchema = z.object({
 
 export const carSearchSchema = z.object({
   modelName: z.string().optional(),
-  year: z.number().min(2000).max(2026).optional(),
+  year: z.coerce.number().min(2000).max(2026).optional(),
   type: z.nativeEnum(Type).optional(),
-  minDistance: z.number().min(0).optional(),
-  maxDistance: z.number().min(0).optional(),
-  minDiscountedPrice: z.number().min(0).optional(),
-  maxDiscountedPrice: z.number().min(0).optional(),
+  // minDistance: z.number().min(0).optional(),
+  // maxDistance: z.number().min(0).optional(),
+  // minDiscountedPrice: z.number().min(0).optional(),
+  // maxDiscountedPrice: z.number().min(0).optional(),
   location: z.string().optional(),
-  features: z.array(z.string()).optional(),
-  category: z.string().optional(),
+  // features: z.array(z.string()).optional(),
+  // category: z.string().optional(),
   sortBy: z.enum(["price", "year", "distance", "rating"]).optional(),
   sortOrder: z.enum(["asc", "desc"]).optional(),
 });

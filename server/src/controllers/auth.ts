@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import { signinSchema, registerSchema } from "../types/zod";
 import Jwt from "jsonwebtoken";
 import User from "../models/user";
+import { config } from "../config";
 export const signinController = async (req: Request, res: Response) => {
   const data = signinSchema.safeParse(req.query);
   if (data.error) {
@@ -11,8 +12,9 @@ export const signinController = async (req: Request, res: Response) => {
   try {
     const user = await User.findOne(
       { email: data.data.email },
-      { password: 1 }
+      { password: 1, role: 1, name: 1, email: 1 }
     );
+    console.log(user);
     if (!user) {
       res.status(401).json({ message: "Invalid email " });
       return;
@@ -24,24 +26,35 @@ export const signinController = async (req: Request, res: Response) => {
       res.status(401).json({ message: "Invalid email or password" });
       return;
     }
-    const acessToken = Jwt.sign({ email: user.email }, "secret", {
-      expiresIn: "1h",
-    });
-    const refreshToken = Jwt.sign({ email: user.email }, "secret", {
-      expiresIn: "7d",
-    });
+    const acessToken = Jwt.sign(
+      { email: user.email, role: user.role },
+      config.jwt_secret || "",
+      {
+        expiresIn: "1h",
+      }
+    );
+    const refreshToken = Jwt.sign(
+      { email: user.email, role: user.role },
+      config.jwt_secret || "",
+      {
+        expiresIn: "7d",
+      }
+    );
     res.cookie("refreshToken", refreshToken, {
       httpOnly: true,
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
     const response = {
-      id: user._id,
-      email: user.email,
-      role: user.role,
-      name: user.name,
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+      },
+      message: "Login successfull",
       acessToken,
     };
-    res.json({ response });
+    res.json(response);
   } catch (error) {
     res.status(500).json({ message: "Internal server error" });
     return;

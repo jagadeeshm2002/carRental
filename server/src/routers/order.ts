@@ -5,12 +5,14 @@ import {
   getOrders,
   updateOrder,
 } from "../controllers/orders";
+import { verifyRole } from "../middlewares/verifyRole";
+import { verifyJwt } from "../middlewares/verifyJwt";
 
 const router: Router = Router();
 
-router.post("/", createOrder);
-router.get("/", getOrders);
-router.get("/:id", getOrder);
-router.put("/:id", updateOrder);
+router.post("/", verifyJwt, verifyRole("user"), createOrder);
+router.get("/", verifyJwt, verifyRole("owner"), getOrders);
+router.get("/:id", verifyJwt, verifyRole("owner"), getOrder);
+router.put("/:id", verifyJwt, verifyRole("owner"), updateOrder);
 
 export default router;
