@@ -16,59 +16,75 @@ function App() {
     <>
       <Toaster />
       <Routes>
-        {/* Authenticated User Routes with UserLayout/Navbar */}
-        {isLoggedIn && user?.role === "user" && (
-          <Route element={<UserLayout />}>
-            <Route path="/" element={<LandingPage />} />
-            <Route path="/search" element={<Search />} />
-            <Route path="/cars/:id" element={<CarView/>} />
-            {/* <Route path="profile" element={<Profile />} />
-            <Route path="/orders/:id" element={<Orders />} />
-            <Route path="favourites" element={<Favourites />} />
-            <Route path="reviews" element={<Reviews />} /> */}
-            {/* Redirect unauthorized access */}
-            <Route path="cars" element={<Navigate to="/" />} />
-            <Route path="cars/new" element={<Navigate to="/" />} />
-            <Route path="/login" element={<Navigate to="/" />} />
-            <Route path="/register" element={<Navigate to="/" />} />
-          </Route>
-        )}
+        <Route element={<MainLayout />}>
+          {/* Common routes for all users */}
+          <Route path="/" element={<LandingPage />} />
+          <Route path="/search" element={<Search />} />
+          <Route path="/cars/:id" element={<CarView />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
 
-        {/* Authenticated Owner Routes with OwnerLayout/Navbar */}
-        {isLoggedIn && user?.role === "owner" && (
-          <Route element={<OwnerLayout />}>
-            <Route path="/" element={<LandingPage />} />
-            <Route path="/search" element={<Search />} />
-            {/* <Route path="/cars/:id" element={<CarDetails />} />
-            <Route path="profile" element={<Profile />} />
-            <Route path="cars" element={<Cars />} />
-            <Route path="orders" element={<Orders />} />
-            <Route path="cars/new" element={<NewCar />} /> */}
-            {/* Redirect unauthorized access */}
-            <Route path="favourites" element={<Navigate to="/" />} />
-            <Route path="reviews" element={<Navigate to="/" />} />
-            <Route path="/login" element={<Navigate to="/" />} />
-            <Route path="/register" element={<Navigate to="/" />} />
-          </Route>
-        )}
+          {/* Authenticated User Routes */}
+          {isLoggedIn && user?.role === "user" && (
+            <Route element={<UserLayout />}>
+              {/* Add user-specific routes here */}
+              {/* <Route path="profile" element={<Profile />} />
+              <Route path="/orders/:id" element={<Orders />} />
+              <Route path="favourites" element={<Favourites />} />
+              <Route path="reviews" element={<Reviews />} /> */}
+            </Route>
+          )}
 
-        {/* Unauthenticated Routes with MainLayout/Landing Navbar */}
-        {!isLoggedIn && (
-          <Route element={<MainLayout />}>
-            <Route path="/" element={<LandingPage />} />
-            <Route path="/search" element={<Search />} />
-            <Route path="/cars/:id" element={<CarView />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
-            {/* Redirect protected routes to login */}
-            <Route path="profile" element={<Navigate to="/login" />} />
-            <Route path="orders" element={<Navigate to="/login" />} />
-            <Route path="favourites" element={<Navigate to="/login" />} />
-            <Route path="reviews" element={<Navigate to="/login" />} />
-            <Route path="cars" element={<Navigate to="/login" />} />
-            <Route path="cars/new" element={<Navigate to="/login" />} />
-          </Route>
-        )}
+          {/* Authenticated Owner Routes */}
+          {isLoggedIn && user?.role === "owner" && (
+            <Route element={<OwnerLayout />}>
+              {/* Add owner-specific routes here */}
+              {/* <Route path="/cars/:id" element={<CarDetails />} />
+              <Route path="profile" element={<Profile />} />
+              <Route path="cars" element={<Cars />} />
+              <Route path="orders" element={<Orders />} />
+              <Route path="cars/new" element={<NewCar />} /> */}
+            </Route>
+          )}
+
+          {/* Protected routes */}
+          <Route
+            path="profile"
+            element={
+              isLoggedIn ? <Navigate to="/" /> : <Navigate to="/login" />
+            }
+          />
+          <Route
+            path="orders"
+            element={
+              isLoggedIn ? <Navigate to="/" /> : <Navigate to="/login" />
+            }
+          />
+          <Route
+            path="favourites"
+            element={
+              isLoggedIn ? <Navigate to="/" /> : <Navigate to="/login" />
+            }
+          />
+          <Route
+            path="reviews"
+            element={
+              isLoggedIn ? <Navigate to="/" /> : <Navigate to="/login" />
+            }
+          />
+          <Route
+            path="cars"
+            element={
+              isLoggedIn ? <Navigate to="/" /> : <Navigate to="/login" />
+            }
+          />
+          <Route
+            path="cars/new"
+            element={
+              isLoggedIn ? <Navigate to="/" /> : <Navigate to="/login" />
+            }
+          />
+        </Route>
 
         {/* Catch-all route - should be outside the conditional rendering */}
         <Route path="*" element={<Navigate to="/" />} />

@@ -10,7 +10,7 @@ import { verifyJwt } from "../middlewares/verifyJwt";
 
 const router: Router = Router();
 
-router.post("/", verifyJwt, verifyRole("user"), createOrder);
+router.post("/", verifyJwt, createOrder);
 router.get("/", verifyJwt, verifyRole("owner"), getOrders);
 router.get("/:id", verifyJwt, verifyRole("owner"), getOrder);
 router.put("/:id", verifyJwt, verifyRole("owner"), updateOrder);

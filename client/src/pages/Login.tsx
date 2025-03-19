@@ -15,7 +15,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { loginFormSchema } from "@/schemas/zodSchema";
 import axios from "axios";
 import { useGlobalContext } from "@/context";
-import { updateToken } from "@/api/client";
+import { publicClient, updateToken } from "@/api/client";
 import { toast } from "sonner";
 import { User } from "@/types/type";
 
@@ -38,7 +38,7 @@ export default function Login() {
 
   const onSubmit = async (data: z.infer<typeof loginFormSchema>) => {
     try {
-      const response = await axios.get<loginResponse>(
+      const response = await publicClient.get<loginResponse>(
         "http://localhost:3000/api/v1/auth/",
         {
           params: data,

@@ -1,9 +1,18 @@
 // client.ts
 import axios, { AxiosError, AxiosRequestConfig } from "axios";
 
+export const BASE_URL = "http://localhost:3000/api/v1";
+export const publicClient = axios.create({
+  baseURL: "http://localhost:3000/api/v1",
+  headers: {
+    "Content-Type": "application/json",
+  },
+  withCredentials: true,
+});
+
 // Create axios client
 export const Client = axios.create({
-  baseURL: "http://localhost:3000/api",
+  baseURL: "http://localhost:3000/api/v1",
   headers: {
     "Content-Type": "application/json",
     "Access-Control-Allow-Origin": "*", // Be cautious with this
@@ -42,10 +51,13 @@ Client.interceptors.response.use(
   async (error: AxiosError) => {
     // Explicitly type the error.config as AxiosRequestConfig
     const originalRequest = error.config as AxiosRequestConfig & {
-      _retry?: boolean;
+      _retry?: number;
     };
-    if (error.response?.status === 401 && !originalRequest._retry) {
-      originalRequest._retry = true;
+    if (
+      error.response?.status === 401 &&
+      (!originalRequest._retry || originalRequest._retry < 3)
+    ) {
+      originalRequest._retry = (originalRequest._retry || 0) + 1;
 
       try {
         const newToken = await refreshToken();
@@ -57,9 +69,14 @@ Client.interceptors.response.use(
           return Client(originalRequest);
         }
       } catch (refreshError) {
-        // Handle refresh failure (logout user, redirect to login)
-        updateToken(null);
-        return Promise.reject(refreshError);
+        if (originalRequest._retry < 3) {
+          // Retry the refresh token request
+          return Client(originalRequest);
+        } else {
+          // Handle refresh failure after 3 attempts (logout user, redirect to login)
+          updateToken(null);
+          return Promise.reject(refreshError);
+        }
       }
     }
 
@@ -69,14 +86,25 @@ Client.interceptors.response.use(
 
 // Refresh token function
 export const refreshToken = async (): Promise<string | null> => {
-  try {
-    const response = await Client.post("/auth/refresh", {
-      withCredentials: true,
-    });
-    const { accessToken } = response.data;
-    return accessToken;
-  } catch (error) {
-    console.error("Error refreshing token:", error);
-    return null;
+  for (let attempt = 1; attempt <= 3; attempt++) {
+    try {
+      const response = await publicClient.post(
+        "http://localhost:3000/api/v1/auth/refresh",
+        {},
+        {
+          withCredentials: true,
+        }
+      );
+      const { accessToken } = response.data;
+      return accessToken;
+    } catch (error) {
+      console.error(`Error refreshing token (attempt ${attempt}):`, error);
+      if (attempt === 3) {
+        return null;
+      }
+      // Wait for a short time before retrying
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+    }
   }
+  return null;
 };

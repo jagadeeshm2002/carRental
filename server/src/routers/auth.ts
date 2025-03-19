@@ -9,6 +9,6 @@ const router: Router = Router();
 
 router.get("/", signinController);
 router.post("/", registerController);
-router.get("/refresh", refreshController);
+router.post("/refresh", refreshController);
 
 export default router;

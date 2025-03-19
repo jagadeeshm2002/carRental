@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, Dispatch, SetStateAction } from "react";
 import { useForm } from "react-hook-form";
 import { format, differenceInDays } from "date-fns";
 import { Calendar } from "lucide-react";
@@ -17,17 +17,17 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 import { useGlobalContext } from "@/context/index";
 import { CarDetails } from "@/types/type";
+import { Client } from "@/api/client";
+import { toast } from "sonner";
 
 const CarBookingSheet = ({
   car,
-  onBookingComplete,
   open,
   setOpen,
 }: {
   car: CarDetails;
-  onBookingComplete: () => void;
   open: boolean;
-  setOpen: () => void;
+  setOpen: Dispatch<SetStateAction<boolean>>;
 }) => {
   const [totalDays, setTotalDays] = useState(1);
   const [totalAmount, setTotalAmount] = useState(car.discountedPrice || 0);
@@ -82,17 +82,16 @@ const CarBookingSheet = ({
   const onSubmit = async (data) => {
     try {
       // Here you would make an API call to your backend
-      console.log("Booking data:", data);
-
-      // Call the onBookingComplete callback if provided
-      if (onBookingComplete) {
-        onBookingComplete(data);
+      const response = await Client.post("/order", data);
+      if (response.status >= 200 && response.status < 300) {
+        toast.success(response.data.message || "Booking successful");
+      } else {
+        toast.error(response.data.message || "Booking failed");
       }
-
-      // Close the sheet
       setOpen(false);
     } catch (error) {
       console.error("Error booking car:", error);
+      toast.error("Failed to book car");
     }
   };
 

@@ -82,7 +82,6 @@ const CarView: React.FC = () => {
         const mockData: CarDetails = {
           _id: "67cb21a5ab2c6fa19c1df6da",
           user: "67c9e2785f5b038fab4404f1",
-          reviews: [],
           modelName: "Tesla Model 4",
           year: 2024,
           type: "sedan",
@@ -151,9 +150,6 @@ const CarView: React.FC = () => {
     <div className="max-w-7xl mx-auto px-4 py-8">
       <CarBookingSheet
         car={car}
-        onBookingComplete={(data) => {
-          console.log("Booking complete:", data);
-        }}
         open={open}
         setOpen={setOpen}
       />

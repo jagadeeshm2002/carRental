@@ -14,21 +14,14 @@ import {
   MapPinIcon,
   Timer,
   TimerReset,
-  Facebook,
-  Instagram,
-  Twitter,
-  Github,
 } from "lucide-react";
 
 import { Link } from "react-router-dom";
 
-
-
 const LandingPage: React.FC = () => {
   return (
-    <div className="min-h-screen w-full px-[2vw] md:px-[5vw] lg:px-[10vw] xl:px-[15vw] transition-all duration-50 ease-linear  overflow-x-hidden relative">
-      <div className=" w-full h-screen bg-white">
-  
+    <div className="min-h-screen w-full pt-[28vh] md:pt-0 px-[2vw] md:px-[5vw] lg:px-[10vw] xl:px-[15vw] transition-all duration-50 ease-linear  overflow-x-hidden relative  ">
+      <div className=" w-full h-full bg-white">
         <main className=" mt-48`1 md:mt-0 w-full h-full overflow-ellipsis">
           <div className="flex flex-col  justify-center items-center h-[calc(100vh-60px)]">
             <div className="w-full flex flex-col md:flex-row h-full">
@@ -234,76 +227,6 @@ const LandingPage: React.FC = () => {
             </div>
           </div>
         </div>
-        <footer className="bg-background border-t w-full static bottom-0">
-          <div className="container mx-auto px-4 py-8">
-            <div className="flex flex-col md:flex-row justify-between items-center">
-              <div className="mb-4 md:mb-0">
-                <p className="text-sm text-muted-foreground">
-                  © {new Date().getFullYear()} Your Company. All rights
-                  reserved.
-                </p>
-              </div>
-
-              <nav className="flex flex-wrap gap-4 mb-4 md:mb-0">
-                <Link
-                  to="/about"
-                  className="text-sm text-muted-foreground hover:text-foreground"
-                >
-                  About
-                </Link>
-                <Link
-                  to="/contact"
-                  className="text-sm text-muted-foreground hover:text-foreground"
-                >
-                  Contact
-                </Link>
-                <Link
-                  to="/terms"
-                  className="text-sm text-muted-foreground hover:text-foreground"
-                >
-                  Terms
-                </Link>
-                <Link
-                  to="/privacy"
-                  className="text-sm text-muted-foreground hover:text-foreground"
-                >
-                  Privacy
-                </Link>
-              </nav>
-
-              <div className="flex space-x-4">
-                <Link
-                  to="https://twitter.com"
-                  className="text-muted-foreground hover:text-foreground"
-                >
-                  <Twitter className="h-5 w-5" />
-                  <span className="sr-only">Twitter</span>
-                </Link>
-                <Link
-                  to="https://facebook.com"
-                  className="text-muted-foreground hover:text-foreground"
-                >
-                  <Facebook className="h-5 w-5" />
-                  <span className="sr-only">Facebook</span>
-                </Link>
-                <Link
-                  to="https://instagram.com"
-                  className="text-muted-foreground hover:text-foreground"
-                >
-                  <Instagram className="h-5 w-5" />
-                  <span className="sr-only">Instagram</span>
-                </Link>
-                <Link
-                  to="https://github.com"
-                  className="text-muted-foreground hover:text-foreground"
-                >
-                  <Github className="h-5 w-5" />
-                  <span className="sr-only">GitHub</span>
-                </Link>
-              </div>
-            </div>
-          </div>
-        </footer>
       </div>
     </div>
   );

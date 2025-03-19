@@ -82,13 +82,18 @@ export const registerController = async (req: Request, res: Response) => {
 };
 export const refreshController = async (req: Request, res: Response) => {
   const refeshToken = req.cookies.refreshToken;
+  console.log(refeshToken);
+  console.log(req.cookies);
 
   if (!refeshToken) {
-    res.status(401).json({ message: "Unauthorized" });
+    res.status(403).json({ message: "Unauthorized" });
     return;
   }
   try {
-    const decoded = Jwt.verify(refeshToken, "secret") as Jwt.JwtPayload;
+    const decoded = Jwt.verify(
+      refeshToken,
+      config.jwt_secret || ""
+    ) as Jwt.JwtPayload;
     const acessToken = Jwt.sign({ email: decoded.email }, "secret", {
       expiresIn: "1h",
     });

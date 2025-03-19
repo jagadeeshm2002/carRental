@@ -1,4 +1,3 @@
-
 import {
   Sheet,
   SheetContent,
@@ -6,18 +5,84 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import logo from "../assets/images/rentcarsicon.png";
-import { MenuIcon } from "lucide-react";
+import { MenuIcon, User } from "lucide-react";
 
 import { useGlobalContext } from "@/context";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@radix-ui/react-dropdown-menu";
 
 const NavBar = () => {
-  const { user } = useGlobalContext();
-  console.log(user);
+  const { user, isLoggedIn } = useGlobalContext();
+
+  const RoleBasedMenu: {
+    [key: string]: { label: string; link: string }[];
+  } = {
+    user: [
+      { label: "dashboard", link: "/dashboard" },
+      { label: "Favourites", link: "/favourites" },
+      { label: "chats", link: "/chats" },
+    ],
+    owner: [
+      { label: "Cars", link: "/cars" },
+      { label: "Orders", link: "/orders" },
+      { label: "chats", link: "/chats" },
+    ],
+  };
+
+  const ProfileDropdown = () => {
+    return (
+      <div className=" flex items-center">
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="rounded-full hover:bg-gray-100 transition-colors duration-200"
+            >
+              <User className=" text-gray-700" size={"5"} />
+            </Button>
+          </DropdownMenuTrigger>
+          {user && user.role && RoleBasedMenu[user.role] && (
+            <DropdownMenuContent
+              align="end"
+              className="w-56 p-2 bg-white rounded-lg shadow-lg border border-gray-200"
+            >
+              {RoleBasedMenu[user.role].map((item, index) => (
+                <DropdownMenuItem
+                  key={index}
+                  className="focus:bg-gray-100 focus:outline-none"
+                >
+                  <Link
+                    to={item.link}
+                    className="flex w-full items-center px-3 py-2 text-sm text-gray-700 hover:text-gray-900 transition-colors duration-150"
+                  >
+                    {item.label}
+                  </Link>
+                </DropdownMenuItem>
+              ))}
+              <DropdownMenuItem className="focus:bg-gray-100 focus:outline-none">
+                <a
+                  href="/logout"
+                  className="flex w-full items-center px-3 py-2 text-sm text-red-600 hover:text-red-700 transition-colors duration-150"
+                >
+                  Logout
+                </a>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          )}
+        </DropdownMenu>
+      </div>
+    );
+  };
   return (
     <>
-      <header className="flex justify-between items-center h-[60px] relative  animate-in slide-in-from-top-10 tansition-all duration-500 z-10 px-16">
+      <header className="flex  md:justify-between  items-center h-[60px] relative  animate-in slide-in-from-top-10 tansition-all duration-500 z-10 px-[5vw] md:px-[7vw] lg:px-[10vw] xl:px-[15vw] ">
         <div className="px-2 flex flex-row self-start justify-center items-center h-full">
           <Link
             to="/"
@@ -27,7 +92,10 @@ const NavBar = () => {
             <p className="font-extrabold text-foreground text-xl">RENTCARS</p>
           </Link>
         </div>
-        <div className="block lg:hidden pr-[2vw]">
+        <div>
+
+        </div>
+        <div className="flex w-full  justify-end items-center lg:hidden pr-[2vw] " >
           <MobileNav />
         </div>
 
@@ -42,13 +110,9 @@ const NavBar = () => {
             </Link>
           ))}
         </nav>
-        <div className="hidden lg:flex  flex-row gap-2 justify-center items-center">
-          {user && user.role === "user" ? (
-            <Link to="/search">
-              <Button variant={"default"} className="text-white">
-                Get started
-              </Button>
-            </Link>
+        <div className=" flex  flex-row gap-2 justify-center items-center w-fit  " style={{ justifySelf: "end" }}>
+          {isLoggedIn ? (
+            <ProfileDropdown />
           ) : (
             <>
               <Link to="/login">
@@ -68,6 +132,7 @@ const NavBar = () => {
 };
 
 const MobileNav = () => {
+  const { isLoggedIn } = useGlobalContext();
   return (
     <Sheet>
       <SheetTrigger asChild>
@@ -88,16 +153,18 @@ const MobileNav = () => {
             </Link>
           ))}
         </nav>
-        <div className="flex flex-row gap-2 justify-center items-center ">
-          <Link to="/login">
-            <Button variant={"ghost"} className="text-black">
-              Sign in
-            </Button>
-          </Link>
-          <Link to="/signup">
-            <Button variant={"default"}>Sign up</Button>
-          </Link>
-        </div>
+        {!isLoggedIn && (
+          <div className="flex flex-row gap-2 justify-center items-center ">
+            <Link to="/login">
+              <Button variant={"ghost"} className="text-black">
+                Sign in
+              </Button>
+            </Link>
+            <Link to="/signup">
+              <Button variant={"default"}>Sign up</Button>
+            </Link>
+          </div>
+        )}
 
         <SheetFooter className="h-full">
           <p className="text-center text-xs text-black">&copy; 2023 RENTCARS</p>
