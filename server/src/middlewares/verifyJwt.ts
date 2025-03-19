@@ -13,15 +13,29 @@ export interface ExtendedRequest extends Request {
 }
 
 export const verifyJwt = (req: Request, res: Response, next: NextFunction) => {
-  const token = req.headers.authorization?.split(" ")[1];
-  if (!token) {
-    return res.status(401).json({ message: "Unauthorized" });
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    return res
+      .status(401)
+      .json({ success: false, message: "No token provided" });
   }
+
+  const token = authHeader.split(" ")[1];
+
   try {
     const decoded = jwt.verify(token, config.jwt_secret || "") as JwtPayload;
     (req as ExtendedRequest).user = decoded;
     next();
   } catch (error) {
-    return res.status(401).json({ message: "Unauthorized" });
+    if (error instanceof jwt.TokenExpiredError) {
+      return res.status(401).json({ success: false, message: "Token expired" });
+    }
+    if (error instanceof jwt.JsonWebTokenError) {
+      return res.status(401).json({ success: false, message: "Invalid token" });
+    }
+    console.error("JWT verification error:", error);
+    return res
+      .status(500)
+      .json({ success: false, message: "Internal server error" });
   }
 };

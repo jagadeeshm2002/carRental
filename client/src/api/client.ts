@@ -15,8 +15,7 @@ export const Client = axios.create({
   baseURL: "http://localhost:3000/api/v1",
   headers: {
     "Content-Type": "application/json",
-    "Access-Control-Allow-Origin": "*", // Be cautious with this
-    "Access-Control-Allow-Methods": "GET,PUT,POST,DELETE,PATCH,OPTIONS",
+  
   },
   withCredentials: true,
 });
@@ -89,12 +88,13 @@ export const refreshToken = async (): Promise<string | null> => {
   for (let attempt = 1; attempt <= 3; attempt++) {
     try {
       const response = await publicClient.post(
-        "http://localhost:3000/api/v1/auth/refresh",
+        "/auth/refresh",
         {},
         {
           withCredentials: true,
         }
       );
+      console.log(response.data);
       const { accessToken } = response.data;
       return accessToken;
     } catch (error) {

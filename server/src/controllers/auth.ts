@@ -14,7 +14,7 @@ export const signinController = async (req: Request, res: Response) => {
       { email: data.data.email },
       { password: 1, role: 1, name: 1, email: 1 }
     );
-    console.log(user);
+
     if (!user) {
       res.status(401).json({ message: "Invalid email " });
       return;
@@ -26,7 +26,7 @@ export const signinController = async (req: Request, res: Response) => {
       res.status(401).json({ message: "Invalid email or password" });
       return;
     }
-    const acessToken = Jwt.sign(
+    const accessToken = Jwt.sign(
       { email: user.email, role: user.role },
       config.jwt_secret || "",
       {
@@ -52,7 +52,7 @@ export const signinController = async (req: Request, res: Response) => {
         role: user.role,
       },
       message: "Login successfull",
-      acessToken,
+      accessToken,
     };
     res.json(response);
   } catch (error) {
@@ -82,8 +82,6 @@ export const registerController = async (req: Request, res: Response) => {
 };
 export const refreshController = async (req: Request, res: Response) => {
   const refeshToken = req.cookies.refreshToken;
-  console.log(refeshToken);
-  console.log(req.cookies);
 
   if (!refeshToken) {
     res.status(403).json({ message: "Unauthorized" });
@@ -94,10 +92,14 @@ export const refreshController = async (req: Request, res: Response) => {
       refeshToken,
       config.jwt_secret || ""
     ) as Jwt.JwtPayload;
-    const acessToken = Jwt.sign({ email: decoded.email }, "secret", {
-      expiresIn: "1h",
-    });
-    res.json({ acessToken });
+    const accessToken = Jwt.sign(
+      { email: decoded.email },
+      config.jwt_secret || "",
+      {
+        expiresIn: "1h",
+      }
+    );
+    res.json({ accessToken });
   } catch (error) {
     res.status(401).json({ message: "Unauthorized" });
   }
