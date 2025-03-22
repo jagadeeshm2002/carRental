@@ -112,3 +112,23 @@ export interface Review {
   rating: number;
   comment: string;
 }
+
+export interface UserDetail {
+  name: string;
+  email: string;
+  phone: string;
+  address: {
+    no: string;
+    street: string;
+    city: string;
+    state: string;
+    country: string;
+  };
+  driverLicense: {
+    number: string;
+    expiryDate: Date;
+    dob: Date;
+  };
+  proofOfIdentity: string; // Passport/Aadhar/Voter ID
+  imageUrl: string; // Profile picture URL
+}

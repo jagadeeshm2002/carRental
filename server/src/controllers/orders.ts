@@ -4,23 +4,34 @@ import { getOrdersSchema, orderSchema, updateOrderSchema } from "../types/zod";
 import mongoose from "mongoose";
 
 export const createOrder = async (req: Request, res: Response) => {
-  const data = orderSchema.safeParse(req.body);
-
-  if (!data.success) {
-    res.status(400).json({ errors: data.error.errors });
-    return;
-  }
   try {
+    const data = orderSchema.safeParse(req.body);
+
+    if (!data.success) {
+      return res.status(400).json({ success: false, error: data.error.errors });
+    }
+
     const { car, pickupDate, returnDate } = data.data;
     if (!(await isCarAvailable(car, pickupDate, returnDate))) {
-      return res.status(400).json({ message: "Car is not available" });
+      return res
+        .status(400)
+        .json({ success: false, error: "Car is not available" });
     }
+
     const order = await Order.create(data.data);
     if (!order) {
-      return res.status(400).json({ message: "Order not created" });
+      return res
+        .status(400)
+        .json({ success: false, error: "Order not created" });
     }
-    res.status(201).json({ message: "Order created successfully" });
-  } catch (error) {}
+
+    res
+      .status(201)
+      .json({ success: true, data: { message: "Order created successfully" } });
+  } catch (error) {
+    console.error("Error creating order:", error);
+    res.status(500).json({ success: false, error: "Internal server error" });
+  }
 };
 const isCarAvailable = async (
   car: string,
@@ -42,16 +53,14 @@ const isCarAvailable = async (
   return true; // Returns true if no overlapping bookings
 };
 
-export const getOrders = async (req: Request, res: Response) => {
-  const data = getOrdersSchema.safeParse(req.query);
-  if (!data.success) {
-    res.status(400).json({ errors: data.error.errors });
-    return;
+export const userGetOrders = async (req: Request, res: Response) => {
+  const id = req.params.id;
+  if (!id && mongoose.Types.ObjectId.isValid(id)) {
+    return res.status(400).json({ message: "Id is required" });
   }
-  try {
-    const { user } = data.data;
 
-    const orders = await Order.find({ user: user });
+  try {
+    const orders = await Order.find({ user: id });
     if (!orders) {
       return res.status(404).json({ message: "Orders not found" });
     }

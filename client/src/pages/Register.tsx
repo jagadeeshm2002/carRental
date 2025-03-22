@@ -11,25 +11,36 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Link, useNavigate } from "react-router-dom";
 import { registerFormSchema } from "@/schemas/zodSchema";
 import axios from "axios";
-
 import { toast } from "sonner";
+
+// Update your form schema in schemas/zodSchema.ts to include role
+
+type FormData = z.infer<typeof registerFormSchema>;
 
 export default function Register() {
   const navigate = useNavigate();
-  const form = useForm<z.infer<typeof registerFormSchema>>({
+  const form = useForm<FormData>({
     resolver: zodResolver(registerFormSchema),
     defaultValues: {
       name: "",
       email: "",
       password: "",
       confirmPassword: "",
+      role: "user", // Default role
     },
   });
 
-  const onSubmit = async (data: z.infer<typeof registerFormSchema>) => {
+  const onSubmit = async (data: FormData) => {
     try {
       const response = await axios.post(
         "http://localhost:3000/api/v1/auth/",
@@ -37,8 +48,6 @@ export default function Register() {
       );
       if (response.status >= 200 && response.status < 300) {
         toast.success(response.data.message || "Registration successful");
-        // Optionally, redirect to login page or dashboard
-
         setTimeout(() => {
           navigate("/login");
         }, 1000);
@@ -92,6 +101,31 @@ export default function Register() {
                   <FormControl>
                     <Input placeholder="Enter your email" {...field} />
                   </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="role"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Account Type</FormLabel>
+                  <Select
+                    onValueChange={field.onChange}
+                    defaultValue={field.value}
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select account type" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="user" className="hover:text-black">User</SelectItem>
+                      <SelectItem value="owner" className="hover:text-black">Owner</SelectItem>
+                    </SelectContent>
+                  </Select>
                   <FormMessage />
                 </FormItem>
               )}

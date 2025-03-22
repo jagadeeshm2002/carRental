@@ -1,4 +1,5 @@
 import { Car } from "@/types/type";
+import { Star } from "lucide-react";
 import { Link } from "react-router-dom";
 
 const CarCard: React.FC<{ car: Car }> = ({ car }) => {
@@ -14,17 +15,7 @@ const CarCard: React.FC<{ car: Car }> = ({ car }) => {
           <div className="flex justify-between items-start">
             <h3 className="text-lg font-semibold">{car.modelName}</h3>
             <div className="flex items-center">
-              <svg
-                className="h-4 w-4 text-yellow-500"
-                fill="currentColor"
-                viewBox="0 0 20 20"
-              >
-                <path
-                  fillRule="evenodd"
-                  d="M10 15.585l-7.682 4.035 1.46-8.543L.307 7.223l8.558-1.244L10 0l2.135 5.98 8.558 1.244-5.47 5.305 1.46 8.543L10 15.585z"
-                  clipRule="evenodd"
-                />
-              </svg>
+              <Star className="fill-yellow-500" strokeWidth={0} />
               <span className="ml-1 text-sm">{car.rating}</span>
             </div>
           </div>

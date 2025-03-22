@@ -25,13 +25,13 @@ const NavBar = () => {
   } = {
     user: [
       { label: "dashboard", link: "/dashboard" },
-      { label: "Favourites", link: "/favourites" },
-      { label: "chats", link: "/chats" },
+      { label: "Favourites", link: "/dashboard/favourites" },
+      { label: "chats", link: "/dashboard/chats" },
     ],
     owner: [
-      { label: "Cars", link: "/cars" },
-      { label: "Orders", link: "/orders" },
-      { label: "chats", link: "/chats" },
+      { label: "dashboard", link: "/dashboard" },
+      { label: "Orders", link: "/dashboard/orders" },
+      { label: "chats", link: "dashboard/chats" },
     ],
   };
 
@@ -92,10 +92,8 @@ const NavBar = () => {
             <p className="font-extrabold text-foreground text-xl">RENTCARS</p>
           </Link>
         </div>
-        <div>
-
-        </div>
-        <div className="flex w-full  justify-end items-center lg:hidden pr-[2vw] " >
+        <div></div>
+        <div className="flex w-full  justify-end items-center lg:hidden pr-[2vw] ">
           <MobileNav />
         </div>
 
@@ -110,7 +108,10 @@ const NavBar = () => {
             </Link>
           ))}
         </nav>
-        <div className=" flex  flex-row gap-2 justify-center items-center w-fit  " style={{ justifySelf: "end" }}>
+        <div
+          className=" flex  flex-row gap-2 justify-center items-center w-fit  "
+          style={{ justifySelf: "end" }}
+        >
           {isLoggedIn ? (
             <ProfileDropdown />
           ) : (

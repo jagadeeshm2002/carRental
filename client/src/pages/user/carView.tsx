@@ -10,14 +10,16 @@ import {
   Star,
   ArrowLeft,
 } from "lucide-react";
-import axios from "axios";
+import { AxiosError } from "axios";
 import CarBookingSheet from "./carBookingSheet";
 import { CarDetails, Review } from "@/types/type";
-
-
+import { Client } from "@/api/client";
+import { useGlobalContext } from "@/context";
+import { toast } from "sonner";
 
 const CarView: React.FC = () => {
   const id = window.location.pathname.split("/").pop();
+  const { isLoggedIn } = useGlobalContext();
   const navigate = useNavigate();
   const [car, setCar] = useState<CarDetails | null>(null);
   const [open, setOpen] = useState(false);
@@ -32,6 +34,13 @@ const CarView: React.FC = () => {
     return Math.round(
       ((car.originalPrice - car.discountedPrice) / car.originalPrice) * 100
     );
+  };
+  const handleCarBook = () => {
+    if (!isLoggedIn) {
+      toast.info("Signin to book a car");
+      return;
+    }
+    setOpen(true);
   };
 
   // Format price with commas
@@ -55,71 +64,46 @@ const CarView: React.FC = () => {
   };
 
   useEffect(() => {
+    const abortController = new AbortController();
+
     const fetchCarDetails = async () => {
       try {
         setLoading(true);
-
         setError(null);
+
         if (!id) {
           setError("Car ID not provided");
           setLoading(false);
           return;
         }
-        const response = await axios.get(
-          `http://localhost:3000/api/v1/cars/${id}`
-        );
+
+        const response = await Client.get(`/cars/${id}`, {
+          signal: abortController.signal,
+        });
+
         if (!response.data) {
           setError(response.data.error);
           setLoading(false);
           return;
         }
+
         setCar(response.data.car);
         setReviews(response.data.reviews);
-        console.log(response.data);
-
-        // For demonstration, using the static data passed in
-        // In a real app, you would fetch from API: await fetch(`/api/v1/cars/${id}`)
-        const mockData: CarDetails = {
-          _id: "67cb21a5ab2c6fa19c1df6da",
-          user: "67c9e2785f5b038fab4404f1",
-          modelName: "Tesla Model 4",
-          year: 2024,
-          type: "sedan",
-          distance: "10000 km",
-          originalPrice: 45000,
-          discountedPrice: 42500,
-          duration: "48 months",
-          imageUrl: [
-            "https://example.com/car1.jpg",
-            "https://example.com/car2.jpg",
-          ],
-          location: "San Francisco, CA",
-          coordinates: {
-            latitude: 37.7749,
-            longitude: -122.4194,
-          },
-          features: [
-            "Air Conditioning",
-            "Bluetooth",
-            "Navigation System",
-            "Leather Seats",
-          ],
-          category: "electric",
-          createdAt: "2025-03-07T16:41:09.399Z",
-          updatedAt: "2025-03-07T17:52:23.686Z",
-          __v: 0,
-        };
-
-        // setCar(mockData);
-        setLoading(false);
       } catch (error) {
-        setError("Failed to load car details");
+        if (error instanceof AxiosError) {
+          setError("Failed to load car details");
+          console.log(error);
+        }
+      } finally {
         setLoading(false);
-        console.log(error);
       }
     };
 
     fetchCarDetails();
+
+    return () => {
+      abortController.abort();
+    };
   }, [id]);
 
   // Handle loading state
@@ -148,11 +132,7 @@ const CarView: React.FC = () => {
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
-      <CarBookingSheet
-        car={car}
-        open={open}
-        setOpen={setOpen}
-      />
+      <CarBookingSheet car={car} open={open} setOpen={setOpen} />
 
       {/* Back button */}
       <button
@@ -305,7 +285,10 @@ const CarView: React.FC = () => {
 
             {/* Action buttons */}
             <div className="space-y-3">
-              <button className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 px-4 rounded-lg transition" onClick={() => setOpen(true)}>
+              <button
+                className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 px-4 rounded-lg transition"
+                onClick={handleCarBook}
+              >
                 Book Now
               </button>
               <button className="w-full bg-white border border-blue-600 text-blue-600 hover:bg-blue-50 py-3 px-4 rounded-lg transition">

@@ -4,6 +4,7 @@ import { Type } from "./enums";
 export const registerSchema = z.object({
   name: z.string().min(2, { message: "Name must be at least 2 characters" }),
   email: z.string().email({ message: "Invalid email address" }),
+  role: z.enum(["user", "owner"], { message: "role is required" }),
   password: z
     .string()
     .min(6, { message: "Password must be at least 6 characters" }),
@@ -33,8 +34,8 @@ export const userSchema = z.object({
   driverLicense: z
     .object({
       number: z.string().optional(),
-      expiryDate: z.date().optional(),
-      dob: z.date().optional(),
+      expiryDate: z.coerce.date().optional(),
+      dob: z.coerce.date().optional(),
     })
     .optional(),
   proofOfIdentity: z.string().optional(),

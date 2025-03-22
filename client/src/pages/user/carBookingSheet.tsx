@@ -19,6 +19,7 @@ import { useGlobalContext } from "@/context/index";
 import { CarDetails } from "@/types/type";
 import { Client } from "@/api/client";
 import { toast } from "sonner";
+import axios from "axios";
 
 const CarBookingSheet = ({
   car,
@@ -79,19 +80,34 @@ const CarBookingSheet = ({
     }
   }, [pickupDate, returnDate, car.discountedPrice, setValue]);
 
-  const onSubmit = async (data) => {
+  const onSubmit = async (data: {
+    car: string;
+    pickupDate: string;
+    returnDate: string;
+    totalDays: number;
+    totalAmount: number;
+    user: string;
+  }) => {
     try {
       // Here you would make an API call to your backend
       const response = await Client.post("/order", data);
       if (response.status >= 200 && response.status < 300) {
         toast.success(response.data.message || "Booking successful");
+        setOpen(false);
       } else {
         toast.error(response.data.message || "Booking failed");
       }
-      setOpen(false);
     } catch (error) {
       console.error("Error booking car:", error);
-      toast.error("Failed to book car");
+      if (axios.isAxiosError(error)) {
+        toast.error(
+          `Failed to book car: ${error.response?.data?.error || error.message}`
+        );
+      } else if (error instanceof Error) {
+        toast.error(`Failed to book car: ${error.message}`);
+      } else {
+        toast.error("An unexpected error occurred while booking the car");
+      }
     }
   };
 

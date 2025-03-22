@@ -1,14 +1,20 @@
 import { Routes, Route, Navigate } from "react-router-dom";
-import LandingPage from "./pages/LandingPage";
-import Login from "./pages/Login";
-import Register from "./pages/Register";
+import LandingPage from "@/pages/LandingPage";
+import Login from "@/pages/Login";
+import Register from "@/pages/Register";
 import { Toaster } from "@/components/ui/sonner";
-import { useGlobalContext } from "./context";
-import UserLayout from "./pages/user/userLayout";
-import OwnerLayout from "./pages/owner/ownerLayout";
-import Search from "./pages/user/search";
-import MainLayout from "./pages/mainLayout";
-import CarView from "./pages/user/carView";
+import { useGlobalContext } from "@/context";
+import UserLayout from "@/pages/user/userLayout";
+import OwnerLayout from "@/pages/owner/ownerLayout";
+import Search from "@/pages/user/search";
+import MainLayout from "@/pages/mainLayout";
+import CarView from "@/pages/user/carView";
+import UserProfile from "@/pages/user/userProfile";
+import Orders from "./pages/user/orders";
+import Favourites from "./pages/user/favourites";
+import Reviews from "./pages/user/reviews";
+import OwnerOrders from "./pages/owner/orders";
+import OwnerProfile from "./pages/owner/ownerProfile";
 
 function App() {
   const { user, isLoggedIn } = useGlobalContext();
@@ -26,24 +32,22 @@ function App() {
 
           {/* Authenticated User Routes */}
           {isLoggedIn && user?.role === "user" && (
-            <Route element={<UserLayout />}>
+            <Route path="/dashboard" element={<UserLayout />}>
               {/* Add user-specific routes here */}
-              {/* <Route path="profile" element={<Profile />} />
-              <Route path="/orders/:id" element={<Orders />} />
+              <Route index element={<UserProfile />} />
+              <Route path="orders" element={<Orders />} />
               <Route path="favourites" element={<Favourites />} />
-              <Route path="reviews" element={<Reviews />} /> */}
+              <Route path="reviews" element={<Reviews />} />
             </Route>
           )}
 
           {/* Authenticated Owner Routes */}
           {isLoggedIn && user?.role === "owner" && (
-            <Route element={<OwnerLayout />}>
-              {/* Add owner-specific routes here */}
-              {/* <Route path="/cars/:id" element={<CarDetails />} />
-              <Route path="profile" element={<Profile />} />
-              <Route path="cars" element={<Cars />} />
-              <Route path="orders" element={<Orders />} />
-              <Route path="cars/new" element={<NewCar />} /> */}
+            <Route path="/dashboard" element={<OwnerLayout />}>
+              // <Route index element={<OwnerProfile />} />
+              <Route path="orders" element={<OwnerOrders />} />
+              <Route path="cars" element={<div>cars</div>} />
+              <Route path="newcar" element={<div>cars</div>} />
             </Route>
           )}
 

@@ -9,7 +9,7 @@ import {
   availableCategories,
   availableFeatures,
 } from "@/types/zod";
-import axios from "axios";
+
 import CarCard from "@/components/carCard";
 import {
   Select,
@@ -22,6 +22,7 @@ import { Button } from "@/components/ui/button";
 
 import { FilterIcon, Loader2Icon, Search, XCircleIcon } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { Client } from "@/api/client";
 
 // Define type for the form values based on the zod schema
 type CarSearchFormValues = z.infer<typeof carSearchSchema>;
@@ -74,13 +75,19 @@ const CarSearchPage: React.FC = () => {
     // features: searchParams.get("features")
     //   ? searchParams.get("features")!.split(",")
     //   : [],
-    sortBy: searchParams.get("sortBy") !== "null" ? searchParams.get("sortBy") as
-      | "price"
-      // | "year"
-      | "rating"
-      | "distance"
-      | undefined : undefined,
-    sortOrder: searchParams.get("sortOrder") !== "null" ? searchParams.get("sortOrder") as "asc" | "desc" | undefined : undefined,
+    sortBy:
+      searchParams.get("sortBy") !== "null"
+        ? (searchParams.get("sortBy") as
+            | "price"
+            // | "year"
+            | "rating"
+            | "distance"
+            | undefined)
+        : undefined,
+    sortOrder:
+      searchParams.get("sortOrder") !== "null"
+        ? (searchParams.get("sortOrder") as "asc" | "desc" | undefined)
+        : undefined,
     page: pagination.page,
     limit: pagination.limit,
   };
@@ -139,7 +146,7 @@ const CarSearchPage: React.FC = () => {
     setError(null);
     try {
       // In a real app, you would use the actual API endpoint
-      const response = await axios.get("http://localhost:3000/api/v1/cars", {
+      const response = await Client.get("/cars", {
         params: data,
       });
       if (!response.data) {
