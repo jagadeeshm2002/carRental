@@ -93,7 +93,7 @@ const OwnerLayout: React.FC = () => {
               </Link>
             </li>
             <li>
-              <Link to="/dashboard/new   car" className={getLinkClass("addcar")}>
+              <Link to="/dashboard/newcar" className={getLinkClass("addcar")}>
                 <PlusCircle
                   className={`h-5 w-5 ${
                     isActiveTab("addcar") ? "text-blue-600" : "text-blue-500"

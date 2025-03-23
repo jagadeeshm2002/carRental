@@ -1,120 +1,92 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Map } from "lucide-react";
+import { Client } from "@/api/client";
+import { toast } from "sonner";
 
 // Define enums/types that match your schema
-const Type = {
-  SEDAN: "Sedan",
-  SUV: "SUV",
-  TRUCK: "Truck",
-  COUPE: "Coupe",
-  HATCHBACK: "Hatchback",
-  CONVERTIBLE: "Convertible",
-  VAN: "Van",
-};
+enum Type {
+  SEDAN = "Sedan",
+  SUV = "SUV",
+  TRUCK = "Truck",
+  COUPE = "Coupe",
+  HATCHBACK = "Hatchback",
+  CONVERTIBLE = "Convertible",
+  VAN = "Van",
+}
 
-const Duration = {
-  DAILY: "Daily",
-  WEEKLY: "Weekly",
-  MONTHLY: "Monthly",
-};
+enum Duration {
+  DAILY = "Daily",
+  WEEKLY = "Weekly",
+  MONTHLY = "Monthly",
+}
 
-const Features = {
-  NAVIGATION: "GPS Navigation",
-  BLUETOOTH: "Bluetooth",
-  SUNROOF: "Sunroof",
-  LEATHER_SEATS: "Leather Seats",
-  BACKUP_CAMERA: "Backup Camera",
-  HEATED_SEATS: "Heated Seats",
-  CRUISE_CONTROL: "Cruise Control",
-  KEYLESS_ENTRY: "Keyless Entry",
-};
+enum Features {
+  NAVIGATION = "GPS Navigation",
+  BLUETOOTH = "Bluetooth",
+  SUNROOF = "Sunroof",
+  LEATHER_SEATS = "Leather Seats",
+  BACKUP_CAMERA = "Backup Camera",
+  HEATED_SEATS = "Heated Seats",
+  CRUISE_CONTROL = "Cruise Control",
+  KEYLESS_ENTRY = "Keyless Entry",
+}
 
-const Category = {
-  ECONOMY: "Economy",
-  LUXURY: "Luxury",
-  SPORT: "Sport",
-  FAMILY: "Family",
-  OFFROAD: "Off-Road",
-};
+enum Category {
+  ECONOMY = "Economy",
+  LUXURY = "Luxury",
+  SPORT = "Sport",
+  FAMILY = "Family",
+  OFFROAD = "Off-Road",
+}
 
-const CarDashboard = () => {
-  // Sample data based on your schema
-  const [cars, setCars] = useState([
-    {
-      _id: "507f1f77bcf86cd799439011", // Mocking ObjectId
-      modelName: "Toyota Camry",
-      year: 2020,
-      type: Type.SEDAN,
-      distance: "35,000 miles",
-      originalPrice: 26500,
-      discountedPrice: 22000,
-      coupon: "SUMMER25",
-      duration: Duration.WEEKLY,
-      imageUrl: ["/api/placeholder/400/300", "/api/placeholder/400/300"],
-      location: "San Francisco, CA",
-      coordinates: {
-        latitude: 37.7749,
-        longitude: -122.4194,
-      },
-      features: [
-        Features.BLUETOOTH,
-        Features.BACKUP_CAMERA,
-        Features.CRUISE_CONTROL,
-      ],
-      category: Category.ECONOMY,
-      isEditing: false,
-    },
-    {
-      _id: "507f1f77bcf86cd799439012",
-      modelName: "Honda CR-V",
-      year: 2021,
-      type: Type.SUV,
-      distance: "15,000 miles",
-      originalPrice: 32000,
-      discountedPrice: 29500,
-      coupon: "FALL15",
-      duration: Duration.MONTHLY,
-      imageUrl: ["/api/placeholder/400/300", "/api/placeholder/400/300"],
-      location: "Los Angeles, CA",
-      coordinates: {
-        latitude: 34.0522,
-        longitude: -118.2437,
-      },
-      features: [
-        Features.NAVIGATION,
-        Features.LEATHER_SEATS,
-        Features.SUNROOF,
-        Features.HEATED_SEATS,
-      ],
-      category: Category.FAMILY,
-      isEditing: false,
-    },
-    {
-      _id: "507f1f77bcf86cd799439013",
-      modelName: "Ford Mustang",
-      year: 2022,
-      type: Type.COUPE,
-      distance: "5,000 miles",
-      originalPrice: 45000,
-      discountedPrice: 42500,
-      coupon: "SPORTS10",
-      duration: Duration.DAILY,
-      imageUrl: ["/api/placeholder/400/300", "/api/placeholder/400/300"],
-      location: "Miami, FL",
-      coordinates: {
-        latitude: 25.7617,
-        longitude: -80.1918,
-      },
-      features: [
-        Features.NAVIGATION,
-        Features.BLUETOOTH,
-        Features.LEATHER_SEATS,
-        Features.KEYLESS_ENTRY,
-      ],
-      category: Category.SPORT,
-      isEditing: false,
-    },
-  ]);
+interface Coordinates {
+  latitude: number;
+  longitude: number;
+}
+
+interface Car {
+  _id: string;
+  modelName: string;
+  year: number;
+  type: Type;
+  distance: string;
+  originalPrice: number;
+  discountedPrice: number;
+  coupon: string;
+  duration: Duration;
+  imageUrl: string[];
+  location: string;
+  coordinates: Coordinates;
+  features: Features[];
+  category: Category;
+  isEditing: boolean;
+}
+
+const Cars: React.FC = () => {
+  const [cars, setCars] = useState<Car[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+
+  useEffect(() => {
+    fetchCars();
+  }, []);
+
+  const fetchCars = async () => {
+    try {
+      setIsLoading(true);
+      const response = await Client.get("/cars");
+      if (!response.data) {
+        throw new Error("No data received from server");
+      }
+      setCars(
+        response.data.cars.map((car: Car) => ({ ...car, isEditing: false }))
+      );
+    } catch (error) {
+      console.error("Error fetching cars:", error);
+      toast.error("Failed to fetch cars. Please try again later.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   // Toggle edit mode for a car
   const toggleEdit = (id: string) => {
@@ -126,21 +98,30 @@ const CarDashboard = () => {
   };
 
   // Handle input changes
-  const handleChange = (id: string, field, value) => {
+  const handleChange = (
+    id: string,
+    field: keyof Car,
+    value: string | number | Type | Category | Duration
+  ) => {
     setCars(
       cars.map((car) => (car._id === id ? { ...car, [field]: value } : car))
     );
   };
 
   // Handle nested object changes (like coordinates)
-  const handleNestedChange = (id, parent, field, value) => {
+  const handleNestedChange = (
+    id: string,
+    parent: keyof Car,
+    field: string,
+    value: number
+  ) => {
     setCars(
       cars.map((car) =>
         car._id === id
           ? {
               ...car,
               [parent]: {
-                ...car[parent],
+                ...(car[parent] as unknown as Record<string, unknown>),
                 [field]: value,
               },
             }
@@ -150,7 +131,7 @@ const CarDashboard = () => {
   };
 
   // Handle array changes for features
-  const handleFeatureToggle = (id, feature) => {
+  const handleFeatureToggle = (id: string, feature: Features) => {
     setCars(
       cars.map((car) => {
         if (car._id === id) {
@@ -167,16 +148,40 @@ const CarDashboard = () => {
   };
 
   // Save changes
-  const saveChanges = (id) => {
-    // In a real app, you would submit changes to an API here
-    toggleEdit(id);
+  const saveChanges = async (id: string) => {
+    try {
+      const carToUpdate = cars.find((car) => car._id === id);
+      if (!carToUpdate) {
+        toast.error("Car not found");
+        return;
+      }
+
+      const response = await Client.put(`/cars/${id}`, carToUpdate);
+      if (response.status === 200) {
+        toast.success("Car details updated successfully");
+        fetchCars(); // Refresh the car list
+      } else {
+        throw new Error("Failed to update car details");
+      }
+    } catch (error) {
+      console.error("Error updating car details:", error);
+      toast.error(
+        error instanceof Error ? error.message : "An unknown error occurred"
+      );
+    } finally {
+      toggleEdit(id);
+    }
   };
 
   // Calculate savings percentage
-  const calculateSavings = (original: number, discounted: number) => {
+  const calculateSavings = (original: number, discounted: number): number => {
     if (!original || !discounted) return 0;
     return Math.round(((original - discounted) / original) * 100);
   };
+
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <div className="bg-blue-50 min-h-screen p-4 md:p-6">
@@ -186,7 +191,7 @@ const CarDashboard = () => {
           <p className="text-blue-600">Manage and edit your vehicle listings</p>
         </header>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-rows gap-6">
           {cars.map((car) => (
             <div
               key={car._id}
@@ -334,7 +339,11 @@ const CarDashboard = () => {
                         <select
                           value={car.type}
                           onChange={(e) =>
-                            handleChange(car._id, "type", e.target.value)
+                            handleChange(
+                              car._id,
+                              "type",
+                              e.target.value as Type
+                            )
                           }
                           className="w-full p-2 border border-gray-300 rounded"
                         >
@@ -352,7 +361,11 @@ const CarDashboard = () => {
                         <select
                           value={car.category}
                           onChange={(e) =>
-                            handleChange(car._id, "category", e.target.value)
+                            handleChange(
+                              car._id,
+                              "category",
+                              e.target.value as Category
+                            )
                           }
                           className="w-full p-2 border border-gray-300 rounded"
                         >
@@ -437,7 +450,11 @@ const CarDashboard = () => {
                         <select
                           value={car.duration}
                           onChange={(e) =>
-                            handleChange(car._id, "duration", e.target.value)
+                            handleChange(
+                              car._id,
+                              "duration",
+                              e.target.value as Duration
+                            )
                           }
                           className="w-full p-2 border border-gray-300 rounded"
                         >
@@ -557,4 +574,4 @@ const CarDashboard = () => {
   );
 };
 
-export default CarDashboard;
+export default Cars;

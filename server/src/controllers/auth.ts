@@ -26,11 +26,12 @@ export const signinController = async (req: Request, res: Response) => {
       res.status(401).json({ message: "Invalid email or password" });
       return;
     }
+    console.log(user)
     const accessToken = Jwt.sign(
       { email: user.email, role: user.role },
       config.jwt_secret || "",
       {
-        expiresIn: "1h",
+        expiresIn: "1d",
       }
     );
     const refreshToken = Jwt.sign(
@@ -93,10 +94,10 @@ export const refreshController = async (req: Request, res: Response) => {
       config.jwt_secret || ""
     ) as Jwt.JwtPayload;
     const accessToken = Jwt.sign(
-      { email: decoded.email },
+      { email: decoded.email ,role: decoded.role},
       config.jwt_secret || "",
       {
-        expiresIn: "1h",
+        expiresIn: "1d",
       }
     );
     res.json({ accessToken });

@@ -72,7 +72,7 @@ export interface Car {
   features: string[];
   category: string;
   rating: number;
-  imageUrl: string;
+  imageUrl: string[];
   // Add other properties as needed
 }
 export interface User {

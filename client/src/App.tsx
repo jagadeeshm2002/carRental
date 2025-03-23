@@ -15,6 +15,8 @@ import Favourites from "./pages/user/favourites";
 import Reviews from "./pages/user/reviews";
 import OwnerOrders from "./pages/owner/orders";
 import OwnerProfile from "./pages/owner/ownerProfile";
+import Cars from "./pages/owner/cars";
+import CreateCarList from "./pages/owner/createCarList";
 
 function App() {
   const { user, isLoggedIn } = useGlobalContext();
@@ -46,8 +48,8 @@ function App() {
             <Route path="/dashboard" element={<OwnerLayout />}>
               // <Route index element={<OwnerProfile />} />
               <Route path="orders" element={<OwnerOrders />} />
-              <Route path="cars" element={<div>cars</div>} />
-              <Route path="newcar" element={<div>cars</div>} />
+              <Route path="cars" element={<Cars />} />
+              <Route path="newcar" element={<CreateCarList />} />
             </Route>
           )}
 

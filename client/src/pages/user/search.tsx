@@ -20,9 +20,10 @@ import {
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 
-import { FilterIcon, Loader2Icon, Search, XCircleIcon } from "lucide-react";
+import { FilterIcon, Search, XCircleIcon } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Client } from "@/api/client";
+import { Skeleton } from "@/components/ui/skeleton";
 
 // Define type for the form values based on the zod schema
 type CarSearchFormValues = z.infer<typeof carSearchSchema>;
@@ -415,16 +416,23 @@ const CarSearchPage: React.FC = () => {
         {/* Car Results */}
         <div className="w-full md:w-3/4">
           {loading ? (
-            <div className="flex justify-center items-center h-64">
-              <Loader2Icon className="h-12 w-12 animate-spin text-blue-600" />
+            <div className="">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {Array.from({ length: 6 }).map((_, index) => (
+                  <div key={index} className="space-y-4">
+                    <Skeleton className="h-40 w-full rounded-lg" />
+                    <Skeleton className="h-4 w-3/4" />
+                    <Skeleton className="h-4 w-1/2" />
+                  </div>
+                ))}
+              </div>
             </div>
           ) : error ? (
             <div className="flex flex-col items-center justify-center h-64 text-center">
               <XCircleIcon className="h-16 w-16 text-red-600 mb-4" />
               <h3 className="text-xl font-medium text-red-600 mb-1">
-                Error fetching cars
+                No cars found
               </h3>
-              <p className="text-gray-500">{error}</p>
             </div>
           ) : cars.length > 0 ? (
             <div>
@@ -531,7 +539,7 @@ export const generateMockCars = (): Car[] => {
           Math.floor(Math.random() * availableCategories.length)
         ],
       rating: Number((Math.random() * 2 + 3).toFixed(1)), // Rating between 3.0 and 5.0
-      imageUrl: `/api/placeholder/400/240`,
+      imageUrl: [`/api/placeholder/400/240`],
     });
   }
 

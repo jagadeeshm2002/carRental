@@ -64,8 +64,6 @@ const CarView: React.FC = () => {
   };
 
   useEffect(() => {
-    const abortController = new AbortController();
-
     const fetchCarDetails = async () => {
       try {
         setLoading(true);
@@ -77,9 +75,7 @@ const CarView: React.FC = () => {
           return;
         }
 
-        const response = await Client.get(`/cars/${id}`, {
-          signal: abortController.signal,
-        });
+        const response = await Client.get(`/cars/${id}`, {});
 
         if (!response.data) {
           setError(response.data.error);
@@ -101,9 +97,7 @@ const CarView: React.FC = () => {
 
     fetchCarDetails();
 
-    return () => {
-      abortController.abort();
-    };
+    return () => {};
   }, [id]);
 
   // Handle loading state

@@ -178,11 +178,7 @@ const NavItem: {
   name: string;
   link: string;
 }[] = [
-  {
-    name: "Become a Renter",
-    link: "#",
-  },
-  { name: "Rental deals", link: "#" },
+  { name: "Cars deals", link: "/search" },
   { name: "About us", link: "#" },
   { name: "Help", link: "#" },
 ];

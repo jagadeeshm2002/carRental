@@ -1,13 +1,14 @@
 import { Car } from "@/types/type";
 import { Star } from "lucide-react";
 import { Link } from "react-router-dom";
+import CarImage from "@/assets/images/car.png"
 
 const CarCard: React.FC<{ car: Car }> = ({ car }) => {
   return (
     <Link to={`/cars/${car._id}`}>
       <div className="bg-white rounded-lg shadow-md overflow-hidden">
         <img
-          src={car.imageUrl || "/api/placeholder/400/240"}
+          src={car.imageUrl[0] || CarImage}
           alt={car.modelName}
           className="w-full h-48 object-cover"
         />
