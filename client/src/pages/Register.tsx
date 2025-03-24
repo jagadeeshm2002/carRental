@@ -42,10 +42,7 @@ export default function Register() {
 
   const onSubmit = async (data: FormData) => {
     try {
-      const response = await axios.post(
-        "http://localhost:3000/api/v1/auth/",
-        data
-      );
+      const response = await axios.post("/auth", data);
       if (response.status >= 200 && response.status < 300) {
         toast.success(response.data.message || "Registration successful");
         setTimeout(() => {
@@ -122,8 +119,12 @@ export default function Register() {
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="user" className="hover:text-black">User</SelectItem>
-                      <SelectItem value="owner" className="hover:text-black">Owner</SelectItem>
+                      <SelectItem value="user" className="hover:text-black">
+                        User
+                      </SelectItem>
+                      <SelectItem value="owner" className="hover:text-black">
+                        Owner
+                      </SelectItem>
                     </SelectContent>
                   </Select>
                   <FormMessage />

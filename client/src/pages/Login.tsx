@@ -39,7 +39,7 @@ export default function Login() {
   const onSubmit = async (data: z.infer<typeof loginFormSchema>) => {
     try {
       const response = await publicClient.get<loginResponse>(
-        "http://localhost:3000/api/v1/auth/",
+        "/auth",
         {
           params: data,
         }
