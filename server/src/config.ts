@@ -1,14 +1,5 @@
 import dotenv from "dotenv";
-import path from "path";
-
-// Load environment variables from .env file
-const result = dotenv.config({
-  path: path.resolve(__dirname, "../.env.local"),
-});
-
-if (result.error) {
-  throw new Error("Failed to load .env file");
-}
+dotenv.config();
 
 // Validate required environment variables
 if (!process.env.DATABASE_URL) {
