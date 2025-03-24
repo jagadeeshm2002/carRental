@@ -1,9 +1,12 @@
 // client.ts
 import axios, { AxiosError, AxiosRequestConfig } from "axios";
 
-export const BASE_URL = "http://localhost:3000/api/v1";
+// export const BASE_URL = "http://localhost:3000/api/v1";
+export const BASE_URL = "https://carrental-vwdj.onrender.com/api/v1";
+
+
 export const publicClient = axios.create({
-  baseURL: "http://localhost:3000/api/v1",
+  baseURL: BASE_URL,
   headers: {
     "Content-Type": "application/json",
   },
@@ -12,7 +15,7 @@ export const publicClient = axios.create({
 
 // Create axios client
 export const Client = axios.create({
-  baseURL: "http://localhost:3000/api/v1",
+  baseURL: BASE_URL,
   headers: {
     "Content-Type": "application/json",
   
