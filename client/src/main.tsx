@@ -8,10 +8,10 @@ import { GlobalContextProvider } from "./context/index.tsx";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <GlobalContextProvider>
-      <BrowserRouter>
+    <BrowserRouter basename="/">
+      <GlobalContextProvider>
         <App />
-      </BrowserRouter>
-    </GlobalContextProvider>
+      </GlobalContextProvider>
+    </BrowserRouter>
   </StrictMode>
 );
