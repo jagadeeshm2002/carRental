@@ -4,21 +4,11 @@ import axios, { AxiosError, AxiosRequestConfig } from "axios";
 // export const BASE_URL = "http://localhost:3000/api/v1";
 export const BASE_URL = "https://carrental-vwdj.onrender.com/api/v1";
 
-
-export const publicClient = axios.create({
-  baseURL: BASE_URL,
-  headers: {
-    "Content-Type": "application/json",
-  },
-  withCredentials: true,
-});
-
 // Create axios client
 export const Client = axios.create({
   baseURL: BASE_URL,
   headers: {
     "Content-Type": "application/json",
-  
   },
   withCredentials: true,
 });
@@ -90,7 +80,7 @@ Client.interceptors.response.use(
 export const refreshToken = async (): Promise<string | null> => {
   for (let attempt = 1; attempt <= 3; attempt++) {
     try {
-      const response = await publicClient.post(
+      const response = await Client.post(
         "/auth/refresh",
         {},
         {

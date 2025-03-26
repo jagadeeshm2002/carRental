@@ -20,8 +20,9 @@ import {
 } from "@/components/ui/select";
 import { Link, useNavigate } from "react-router-dom";
 import { registerFormSchema } from "@/schemas/zodSchema";
-import axios from "axios";
 import { toast } from "sonner";
+import { Client } from "@/api/client";
+import { AxiosError } from "axios";
 
 // Update your form schema in schemas/zodSchema.ts to include role
 
@@ -42,7 +43,7 @@ export default function Register() {
 
   const onSubmit = async (data: FormData) => {
     try {
-      const response = await axios.post("/auth", data);
+      const response = await Client.post("/auth", data);
       if (response.status >= 200 && response.status < 300) {
         toast.success(response.data.message || "Registration successful");
         setTimeout(() => {
@@ -52,7 +53,7 @@ export default function Register() {
         toast.error(response.data.message || "Registration failed");
       }
     } catch (error) {
-      if (axios.isAxiosError(error) && error.response) {
+      if (error instanceof AxiosError && error.response) {
         toast.error(error.response.data.message || "Failed to register");
       } else if (error instanceof Error) {
         toast.error(error.message || "An unexpected error occurred");
