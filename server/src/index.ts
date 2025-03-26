@@ -23,6 +23,8 @@ app.use(
       "Content-Type",
       "Authorization",
       "Origin",
+      'Access-Control-Allow-Headers', 
+      'Access-Control-Allow-Origin',
       "X-Requested-With",
     ],
   })
