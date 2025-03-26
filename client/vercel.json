@@ -1,39 +1,26 @@
 {
     "version": 2,
-    "routes": [
-      { "handle": "filesystem" },
-      { 
-        "src": "/(.*)", 
-        "dest": "/index.html",
-        "continue": true
-      }
-    ],
     "rewrites": [
-      { "source": "/(.*)", "destination": "/index.html" }
+      { "source": "/", "destination": "/index.html" },
+      { "source": "/search", "destination": "/index.html" },
+      { "source": "/cars/:id", "destination": "/index.html" },
+      { "source": "/login", "destination": "/index.html" },
+      { "source": "/register", "destination": "/index.html" },
+      { "source": "/dashboard", "destination": "/index.html" },
+      { "source": "/dashboard/orders", "destination": "/index.html" },
+      { "source": "/dashboard/favourites", "destination": "/index.html" },
+      { "source": "/dashboard/reviews", "destination": "/index.html" },
+      { "source": "/dashboard/cars", "destination": "/index.html" },
+      { "source": "/dashboard/newcar", "destination": "/index.html" },
+      { "source": "/profile", "destination": "/index.html" },
+      { "source": "/orders", "destination": "/index.html" },
+      { "source": "/favourites", "destination": "/index.html" },
+      { "source": "/reviews", "destination": "/index.html" },
+      { "source": "/cars", "destination": "/index.html" },
+      { "source": "/cars/new", "destination": "/index.html" },
+      { "source": "/:path*", "destination": "/index.html" }
     ],
     "buildCommand": "npm run build",
     "outputDirectory": "dist",
-    "framework": "vite",
-    "redirects": [
-      { 
-        "source": "/dashboard", 
-        "destination": "/dashboard/",
-        "permanent": true 
-      },
-      { 
-        "source": "/dashboard/orders", 
-        "destination": "/dashboard/orders/",
-        "permanent": true 
-      }
-    ],
-    "headers": [
-      {
-        "source": "/(.*)",
-        "headers": [
-          { "key": "Cache-Control", "value": "public, max-age=0, must-revalidate" },
-          { "key": "X-Frame-Options", "value": "SAMEORIGIN" },
-          { "key": "X-Content-Type-Options", "value": "nosniff" }
-        ]
-      }
-    ]
+    "framework": "vite"
   }
