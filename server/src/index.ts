@@ -9,13 +9,24 @@ const app = express();
 
 // Middleware
 
-app.use(cors({ origin: ["http://localhost:5173", "https://dl6ecdmuyksf1.cloudfront.net","https://car-rental-kohl-eta.vercel.app"],credentials: true ,methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: [
-    'Content-Type', 
-    'Authorization', 
-    'Origin', 
-    'X-Requested-With'
-  ]}));
+app.use(
+  cors({
+    origin: [
+      "http://localhost:5173",
+      "https://dl6ecdmuyksf1.cloudfront.net",
+      "https://car-rental-kohl-eta.vercel.app",
+      "https://car-rental-git-main-jagadeeshm2002s-projects.vercel.app",
+    ],
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: [
+      "Content-Type",
+      "Authorization",
+      "Origin",
+      "X-Requested-With",
+    ],
+  })
+);
 
 app.use(express.json());
 app.use(cookieParser());
