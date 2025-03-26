@@ -88,7 +88,7 @@ const CarView: React.FC = () => {
       } catch (error) {
         if (error instanceof AxiosError) {
           setError("Failed to load car details");
-          console.log(error);
+        
         }
       } finally {
         setLoading(false);

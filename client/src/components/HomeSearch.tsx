@@ -47,7 +47,7 @@ export function SearchForm() {
   });
 
   const onSubmit = (data: z.infer<typeof searchFormSchema>) => {
-    console.log(data);
+  
 
     const pickupDate = data.pickupDate.toISOString().split("T")[0]; // Format: YYYY-MM-DD
     const returnDate = data.returnDate.toISOString().split("T")[0]; // Format: YYYY-MM-DD

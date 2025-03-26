@@ -67,12 +67,16 @@ const NavBar = () => {
                 </DropdownMenuItem>
               ))}
               <DropdownMenuItem className="focus:bg-gray-100 focus:outline-none">
-                <a
-                  href="/logout"
+                <Button
+                  onClick={() => {
+                    localStorage.removeItem("jwt_token");
+                    localStorage.removeItem("user");
+                    window.location.reload();
+                  }}
                   className="flex w-full items-center px-3 py-2 text-sm text-red-600 hover:text-red-700 transition-colors duration-150"
                 >
                   Logout
-                </a>
+                </Button>
               </DropdownMenuItem>
             </DropdownMenuContent>
           )}

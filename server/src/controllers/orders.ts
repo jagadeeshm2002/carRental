@@ -78,7 +78,7 @@ export const getOrder = async (req: Request, res: Response) => {
 
 export const updateOrder = async (req: Request, res: Response) => {
   const data = updateOrderSchema.safeParse(req.body);
-  console.log(req.body);
+
   const id = req.params.id;
   if (!id && mongoose.Types.ObjectId.isValid(id)) {
     return res.status(400).json({ message: "Id is required" });
@@ -177,7 +177,7 @@ export const updateOrder = async (req: Request, res: Response) => {
 //       // Sort by order date (newest first)
 //       { $sort: { createdAt: -1 } },
 //     ]);
-//     console.log(orders);
+//   
 //     if (!orders || orders.length === 0) {
 //       return res.status(404).json({ message: "Orders not found" });
 //     }
@@ -195,17 +195,17 @@ export async function ownerGetOrders(req: Request, res: Response) {
       typeof ownerId === "string"
         ? new mongoose.Types.ObjectId(ownerId)
         : ownerId;
-    console.log("Owner ID:", ownerId);
+
 
     // First, check if user exists and is an owner
     const owner = await User.findOne({
       _id: ownerObjectId,
       role: Role.OWNER,
     });
-    console.log("Owner:", owner);
+
 
     if (!owner) {
-      console.log("User not found or is not an owner:", ownerId);
+   
       return {
         success: false,
         message: "User not found or does not have owner role",
@@ -216,7 +216,7 @@ export async function ownerGetOrders(req: Request, res: Response) {
     const ownerCars = await Car.find({ user: ownerObjectId });
 
     if (!ownerCars.length) {
-      console.log("No cars found for owner:", ownerId);
+ 
       return {
         success: true,
         message: "No cars found for this owner",
@@ -226,7 +226,7 @@ export async function ownerGetOrders(req: Request, res: Response) {
 
     // Log the car IDs to verify
     const carIds = ownerCars.map((car) => car._id);
-    console.log("Owner cars:", carIds);
+
 
     // Find orders for these cars
     const orders = await Order.find({
@@ -236,7 +236,7 @@ export async function ownerGetOrders(req: Request, res: Response) {
       .populate("car", "modelName year type imageUrl")
       .sort({ createdAt: -1 });
 
-    console.log(`Found ${orders.length} orders for owner's cars`);
+
 
     return res.status(200).json({ success: true, data: orders });
   } catch (error) {

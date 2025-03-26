@@ -26,7 +26,7 @@ export const signinController = async (req: Request, res: Response) => {
       res.status(401).json({ message: "Invalid email or password" });
       return;
     }
-    console.log(user)
+
     const accessToken = Jwt.sign(
       { email: user.email, role: user.role },
       config.jwt_secret || "",

@@ -24,7 +24,7 @@ export const verifyJwt = (req: Request, res: Response, next: NextFunction) => {
 
   try {
     const decoded = jwt.verify(token, config.jwt_secret || "") as JwtPayload;
-    console.log(decoded);
+
     (req as ExtendedRequest).user = decoded;
     next();
   } catch (error) {

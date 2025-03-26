@@ -235,11 +235,11 @@ const CreateCarList = () => {
 
       try {
         // Make API call
-        const response = await Client.post("/cars", {
+        await Client.post("/cars", {
           user: user?.id,
           ...carData,
         });
-        console.log("API Response:", response.data);
+       
 
         // Reset form and show success toast
         setCarData(defaultCarData);

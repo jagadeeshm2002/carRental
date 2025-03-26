@@ -87,7 +87,7 @@ export const refreshToken = async (): Promise<string | null> => {
           withCredentials: true,
         }
       );
-      console.log(response.data);
+
       const { accessToken } = response.data;
       return accessToken;
     } catch (error) {

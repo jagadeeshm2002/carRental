@@ -35,7 +35,7 @@ export const presign = async (req: Request, res: Response) => {
       contentType
     );
     res.json({ signedUrl });
-    console.log(signedUrl);
+
   } catch (error) {
     console.error("Error generating signed URL:", error);
     res.status(500).json({ error: "Failed to generate signed URL" });

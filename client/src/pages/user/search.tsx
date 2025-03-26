@@ -157,7 +157,7 @@ const CarSearchPage: React.FC = () => {
 
       setCars(response.data.cars);
       setPagination(response.data.pagination);
-      console.log(response.data);
+     
     } catch (error) {
       // For demo purposes, populate with mock data
       setError("Failed to fetch cars. Please try again later." + error);
