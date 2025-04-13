@@ -639,4 +639,4 @@ const CarSearchPage: React.FC = () => {
 
 export default CarSearchPage;
 
-// Mock data moved to utils/mockData.ts
+
