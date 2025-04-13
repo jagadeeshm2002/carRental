@@ -440,9 +440,9 @@ const CarSearchPage: React.FC = () => {
                     <SelectValue placeholder="Any Type" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="any">Any Type</SelectItem>
+                    <SelectItem value="all">ALL Type</SelectItem>
                     {Object.values(Type).map((type) => (
-                      <SelectItem key={type} value={type}>
+                      <SelectItem key={type} value={type} className="hover:text-black text-black">
                         {type}
                       </SelectItem>
                     ))}

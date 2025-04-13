@@ -46,7 +46,7 @@ export const getCars = async (req: Request, res: Response) => {
     const {
       modelName,
       year,
-      type,
+      type: typeOfCar,
       // minDistance,
       // maxDistance,
       // minDiscountedPrice,
@@ -63,7 +63,7 @@ export const getCars = async (req: Request, res: Response) => {
 
     // Text matching queries
     if (modelName) query.modelName = { $regex: modelName, $options: "i" }; // Case-insensitive partial match
-    if (type && type !== "any") query.type = type;
+    if (typeOfCar && typeOfCar !== "all") query.type = typeOfCar; // Exact match for the specified type
     if (location) query.location = { $regex: location, $options: "i" }; // Case-insensitive partial match
     // if (category) query.category = { $regex: category, $options: "i" }; // Case-insensitive partial match
     if (year) query.year = year;

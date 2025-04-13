@@ -1,5 +1,6 @@
 export enum Type {
     SEDAN = "sedan",
+    ALL ="all",
     SUV = "suv",
     HATCHBACK = "hatchback",
     COUPE = "coupe",
