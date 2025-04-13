@@ -269,7 +269,7 @@ const CarView: React.FC = () => {
               <div className="flex items-center justify-between mb-2">
                 <span className="text-gray-600">Monthly Payment</span>
                 <span>
-                  $
+                  ₹
                   {formatPrice(
                     Math.round(car.discountedPrice / parseInt(car.duration))
                   )}

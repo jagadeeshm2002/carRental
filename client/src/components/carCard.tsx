@@ -32,11 +32,11 @@ const CarCard: React.FC<{ car: Car }> = ({ car }) => {
           </div>
           <div className="mt-2">
             <span className="text-lg font-semibold">
-              ${car.discountedPrice.toLocaleString()}
+              ₹{car.discountedPrice.toLocaleString()}
             </span>
             {car.originalPrice > car.discountedPrice && (
               <span className="ml-2 text-sm text-gray-500 line-through">
-                ${car.originalPrice.toLocaleString()}
+                ₹{car.originalPrice.toLocaleString()}
               </span>
             )}
           </div>

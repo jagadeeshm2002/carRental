@@ -256,11 +256,11 @@ const Cars: React.FC = () => {
                     <div className="mb-4">
                       <div className="flex items-baseline mb-1">
                         <span className="text-xl font-bold text-blue-800">
-                          ${car.discountedPrice.toLocaleString()}
+                          ₹{car.discountedPrice.toLocaleString()}
                         </span>
                         {car.originalPrice > car.discountedPrice && (
                           <span className="ml-2 text-sm text-gray-500 line-through">
-                            ${car.originalPrice.toLocaleString()}
+                            ₹{car.originalPrice.toLocaleString()}
                           </span>
                         )}
                       </div>
@@ -395,7 +395,7 @@ const Cars: React.FC = () => {
                     <div className="grid grid-cols-2 gap-4">
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Original Price ($)
+                          Original Price (₹)
                         </label>
                         <input
                           type="number"
@@ -412,7 +412,7 @@ const Cars: React.FC = () => {
                       </div>
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Discounted Price ($)
+                          Discounted Price (₹)
                         </label>
                         <input
                           type="number"
