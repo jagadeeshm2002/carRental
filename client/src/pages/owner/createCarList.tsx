@@ -790,7 +790,7 @@ const CreateCarList = () => {
                           carData.discountedPrice > 0 &&
                           carData.discountedPrice < carData.originalPrice && (
                             <span className="ml-2 text-sm text-gray-500 line-through">
-                              ${carData.originalPrice.toLocaleString()}
+                              ₹{carData.originalPrice.toLocaleString()}
                             </span>
                           )}
                       </>

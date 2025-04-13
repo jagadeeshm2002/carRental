@@ -174,7 +174,7 @@ const CarBookingSheet = ({
                     <div className="flex justify-between">
                       <span className="text-gray-500">Price per day:</span>
                       <span className="font-medium">
-                        ${car.discountedPrice}/day
+                        ₹{car.discountedPrice}/day
                       </span>
                     </div>
                     <div className="flex justify-between">
@@ -183,7 +183,7 @@ const CarBookingSheet = ({
                     </div>
                     <div className="flex justify-between text-lg font-bold">
                       <span>Total amount:</span>
-                      <span>${totalAmount}</span>
+                      <span>₹{totalAmount}</span>
                     </div>
                   </div>
                 </CardContent>

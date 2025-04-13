@@ -243,13 +243,13 @@ const CarView: React.FC = () => {
               <div className="flex items-center justify-between mb-2">
                 <span className="text-gray-600">Original Price</span>
                 <span className="text-gray-500 line-through">
-                  ${formatPrice(car.originalPrice)}
+                  ₹{formatPrice(car.originalPrice)}
                 </span>
               </div>
               <div className="flex items-center justify-between mb-4">
                 <span className="text-gray-600">Discounted Price</span>
                 <span className="text-2xl font-bold text-blue-600">
-                  ${formatPrice(car.discountedPrice)}
+                  ₹{formatPrice(car.discountedPrice)}
                 </span>
               </div>
               {getDiscountPercentage() > 0 && (
