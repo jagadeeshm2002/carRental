@@ -1,4 +1,10 @@
-import React, { useState, useEffect, useCallback, useRef } from "react";
+import React, {
+  useState,
+  useEffect,
+  useCallback,
+  useRef,
+  useMemo,
+} from "react";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -21,16 +27,29 @@ import { Input } from "@/components/ui/input";
 import { Client } from "@/api/client";
 import { Skeleton } from "@/components/ui/skeleton";
 
-// Simple debounce function for search operations
+// Improved debounce function with better performance
 function debounce(
   func: (values: CarSearchFormValues) => void,
   wait: number
 ): (values: CarSearchFormValues) => void {
   let timeout: ReturnType<typeof setTimeout> | null = null;
+  let lastArgs: CarSearchFormValues | null = null;
 
   return function (values: CarSearchFormValues) {
-    if (timeout) clearTimeout(timeout);
-    timeout = setTimeout(() => func(values), wait);
+    lastArgs = values;
+
+    const later = () => {
+      timeout = null;
+      if (lastArgs) {
+        func(lastArgs);
+      }
+    };
+
+    if (timeout) {
+      clearTimeout(timeout);
+    }
+
+    timeout = setTimeout(later, wait);
   };
 }
 
@@ -104,53 +123,51 @@ const CarSearchPage: React.FC = () => {
   // Use a ref to track if we're currently resetting filters
   const isResetting = useRef(false);
 
-  // Effect to update URL params when form values change
+  // Effect to update URL params when form values change - with debounce to prevent excessive updates
   useEffect(() => {
-    // Skip URL updates during reset operation to prevent flickering
+    // Skip URL updates during reset operation
     if (isResetting.current) return;
 
-    // Get current search params
-    const currentParams = new URLSearchParams(window.location.search);
-    const newParams = new URLSearchParams();
+    // Use a timeout to debounce URL updates
+    const timer = setTimeout(() => {
+      // Get current search params
+      const currentParams = new URLSearchParams(window.location.search);
+      const newParams = new URLSearchParams();
 
-    // Preserve location, pickupDate, and returnDate from the URL if they exist
-    const preserveParams = ["location", "pickupDate", "returnDate"];
-    preserveParams.forEach((param) => {
-      if (currentParams.has(param)) {
-        newParams.set(param, currentParams.get(param)!);
+      // Preserve location, pickupDate, and returnDate from the URL if they exist
+      const preserveParams = ["location", "pickupDate", "returnDate"];
+      preserveParams.forEach((param) => {
+        if (currentParams.has(param)) {
+          newParams.set(param, currentParams.get(param)!);
+        }
+      });
+
+      // Only add modelName if it's explicitly set by the user
+      if (formValues.modelName && formValues.modelName.trim() !== "") {
+        newParams.set("modelName", formValues.modelName);
       }
-    });
 
-    // Only add modelName if it's explicitly set by the user
-    if (formValues.modelName && formValues.modelName.trim() !== "") {
-      newParams.set("modelName", formValues.modelName);
-    }
+      // Only add type if it's explicitly set
+      if (formValues.type) {
+        newParams.set("type", formValues.type);
+      }
 
-    // Only add type if it's explicitly set
-    if (formValues.type) {
-      newParams.set("type", formValues.type);
-    }
+      // Only add sort parameters if they're explicitly set by the user through the UI
+      if (formValues.sortBy && formValues.sortOrder && currentSortOption) {
+        newParams.set("sortBy", formValues.sortBy);
+        newParams.set("sortOrder", formValues.sortOrder);
+      }
 
-    // Only add sort parameters if they're explicitly set by the user through the UI
-    // and not just default values
-    if (formValues.sortBy && formValues.sortOrder && currentSortOption) {
-      newParams.set("sortBy", formValues.sortBy);
-      newParams.set("sortOrder", formValues.sortOrder);
-    }
+      // Don't update URL if parameters haven't changed
+      const newParamsString = newParams.toString();
+      const currentParamsString = currentParams.toString();
+      if (newParamsString !== currentParamsString) {
+        setSearchParams(newParams);
+      }
+    }, 300);
 
-    // Don't update URL if only the default parameters would be set
-    // This prevents adding unnecessary parameters to the URL
-    if (newParams.toString() !== currentParams.toString()) {
-      setSearchParams(newParams);
-    }
-  }, [
-    formValues.modelName,
-    formValues.type,
-    formValues.sortBy,
-    formValues.sortOrder,
-    currentSortOption,
-    setSearchParams,
-  ]);
+    return () => clearTimeout(timer);
+  }, [formValues, setSearchParams, isResetting]);
 
   // Handle sort option change - split into sortBy and sortOrder
   const handleSortChange = (sortOption: string) => {
@@ -214,46 +231,62 @@ const CarSearchPage: React.FC = () => {
     fetchCars(formValues);
   };
 
-  // Create a stable debounced fetch function
+  // Create a stable debounced fetch function that persists across renders
   const debouncedFetchRef =
-    useRef<(values: CarSearchFormValues) => void>(undefined);
+    useRef<(values: CarSearchFormValues) => void | null>(null);
 
-  // Initialize the debounced function once
+  // Initialize the debounced function once with a longer delay to prevent excessive API calls
   useEffect(() => {
+    // Create a debounced version that only executes after user stops changing filters
     debouncedFetchRef.current = debounce((values: CarSearchFormValues) => {
       if (!isResetting.current) {
         fetchCars(values);
       }
-    }, 300);
+    }, 500); // Increased debounce time to reduce API calls
+
+    // Clean up function
+    return () => {
+      // Clear any pending debounced calls when component unmounts
+      debouncedFetchRef.current = null;
+    };
   }, [fetchCars]);
 
-  // Function to call the debounced fetch
+  // Memoized function to call the debounced fetch - prevents recreation on every render
   const debouncedFetch = useCallback((values: CarSearchFormValues) => {
-    if (debouncedFetchRef.current) {
+    if (debouncedFetchRef.current && !isResetting.current) {
       debouncedFetchRef.current(values);
     }
   }, []);
+
+  // Memoize the form values to prevent unnecessary re-renders
+  const memoizedFormValues = useMemo(() => {
+    return {
+      modelName: formValues.modelName,
+      type: formValues.type,
+      location: formValues.location,
+      sortBy: formValues.sortBy,
+      sortOrder: formValues.sortOrder,
+      page: formValues.page,
+      limit: formValues.limit,
+    };
+  }, [
+    formValues.modelName,
+    formValues.type,
+    formValues.location,
+    formValues.sortBy,
+    formValues.sortOrder,
+    formValues.page,
+    formValues.limit,
+  ]);
 
   // Fetch cars when component mounts or form values change
   useEffect(() => {
     // Skip if we're in the middle of resetting
     if (isResetting.current) return;
 
-    // Create a clean version of formValues without null/undefined/empty values
-    const cleanFormValues = { ...formValues };
-
-    // Use debounced fetch to prevent flickering
-    debouncedFetch(cleanFormValues);
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [
-    // Only re-fetch when these specific values change
-    formValues.modelName,
-    formValues.type,
-    formValues.location,
-    formValues.sortBy,
-    formValues.sortOrder,
-  ]);
+    // Use debounced fetch to prevent flickering and excessive API calls
+    debouncedFetch(memoizedFormValues);
+  }, [memoizedFormValues, debouncedFetch]);
 
   // Initial fetch on component mount
   useEffect(() => {
@@ -262,13 +295,23 @@ const CarSearchPage: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Reset all filters with debounce to prevent flickering
-  const resetFilters = () => {
+  // Optimized reset function to prevent excessive re-renders
+  const resetFilters = useCallback(() => {
     // Set the resetting flag to true to prevent other effects from running
     isResetting.current = true;
 
-    // First, clear the URL parameters to prevent multiple re-renders
+    // Batch all state updates together to prevent multiple re-renders
+    // First, clear the URL parameters
     setSearchParams(new URLSearchParams());
+
+    // Clear cars array and reset pagination to prevent flashing old results
+    setCars([]);
+    setPagination({
+      page: 1,
+      limit: 10,
+      total: 0,
+      pages: 0,
+    });
 
     // Then reset the form with minimal default values
     reset({
@@ -281,9 +324,9 @@ const CarSearchPage: React.FC = () => {
       limit: 10,
     });
 
-    // Finally, fetch cars with empty parameters after a short delay
-    // This prevents multiple rapid re-renders
+    // Use a longer timeout to ensure all state updates have completed
     setTimeout(() => {
+      // Fetch cars with minimal parameters
       fetchCars({
         page: 1,
         limit: 10,
@@ -291,13 +334,13 @@ const CarSearchPage: React.FC = () => {
 
       // Reset the flag after the operation is complete
       isResetting.current = false;
-    }, 50);
-  };
+    }, 100);
+  }, [fetchCars, reset, setSearchParams, setCars, setPagination]);
 
-  // Toggle mobile filters
-  const toggleFilters = () => {
-    setFiltersVisible(!filtersVisible);
-  };
+  // Toggle mobile filters - memoized to prevent unnecessary re-renders
+  const toggleFilters = useCallback(() => {
+    setFiltersVisible((prev) => !prev);
+  }, []);
 
   // Apply filters
   const applyFilters = () => {
