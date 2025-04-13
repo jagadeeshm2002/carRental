@@ -1,14 +1,10 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useSearchParams } from "react-router-dom";
 import { Car, Type } from "@/types/type"; // Ensure this import matches your actual enum location
-import {
-  carSearchSchema,
-  availableCategories,
-  availableFeatures,
-} from "@/types/zod";
+import { carSearchSchema } from "@/types/zod";
 
 import CarCard from "@/components/carCard";
 import {
@@ -24,6 +20,19 @@ import { FilterIcon, Search, XCircleIcon } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Client } from "@/api/client";
 import { Skeleton } from "@/components/ui/skeleton";
+
+// Simple debounce function for search operations
+function debounce(
+  func: (values: CarSearchFormValues) => void,
+  wait: number
+): (values: CarSearchFormValues) => void {
+  let timeout: ReturnType<typeof setTimeout> | null = null;
+
+  return function (values: CarSearchFormValues) {
+    if (timeout) clearTimeout(timeout);
+    timeout = setTimeout(() => func(values), wait);
+  };
+}
 
 // Define type for the form values based on the zod schema
 type CarSearchFormValues = z.infer<typeof carSearchSchema>;
@@ -63,7 +72,9 @@ const CarSearchPage: React.FC = () => {
     // Safely get location parameter
     location: searchParams.get("location") || undefined,
     // Safely parse sortBy parameter
-    sortBy: ["price", "rating", "distance"].includes(searchParams.get("sortBy") || "")
+    sortBy: ["price", "rating", "distance"].includes(
+      searchParams.get("sortBy") || ""
+    )
       ? (searchParams.get("sortBy") as "price" | "rating" | "distance")
       : undefined,
     // Safely parse sortOrder parameter
@@ -84,31 +95,62 @@ const CarSearchPage: React.FC = () => {
   // Watch all form values
   const formValues = watch();
 
+  // Get current sort option for the dropdown
+  const currentSortOption =
+    formValues.sortBy && formValues.sortOrder
+      ? `${formValues.sortBy}-${formValues.sortOrder}`
+      : "";
+
+  // Use a ref to track if we're currently resetting filters
+  const isResetting = useRef(false);
+
   // Effect to update URL params when form values change
   useEffect(() => {
+    // Skip URL updates during reset operation to prevent flickering
+    if (isResetting.current) return;
+
+    // Get current search params
+    const currentParams = new URLSearchParams(window.location.search);
     const newParams = new URLSearchParams();
 
-    // Add non-empty values to URL params
-    Object.entries(formValues).forEach(([key, value]) => {
-      // Skip pagination parameters in URL
-      if (key === 'page' || key === 'limit') return;
-
-      if (
-        value !== undefined &&
-        value !== "" &&
-        !(Array.isArray(value) && value.length === 0) &&
-        value !== null // Explicitly check for null values
-      ) {
-        if (Array.isArray(value)) {
-          newParams.set(key, value.join(","));
-        } else {
-          newParams.set(key, String(value));
-        }
+    // Preserve location, pickupDate, and returnDate from the URL if they exist
+    const preserveParams = ["location", "pickupDate", "returnDate"];
+    preserveParams.forEach((param) => {
+      if (currentParams.has(param)) {
+        newParams.set(param, currentParams.get(param)!);
       }
     });
 
-    setSearchParams(newParams);
-  }, [formValues, setSearchParams]);
+    // Only add modelName if it's explicitly set by the user
+    if (formValues.modelName && formValues.modelName.trim() !== "") {
+      newParams.set("modelName", formValues.modelName);
+    }
+
+    // Only add type if it's explicitly set
+    if (formValues.type) {
+      newParams.set("type", formValues.type);
+    }
+
+    // Only add sort parameters if they're explicitly set by the user through the UI
+    // and not just default values
+    if (formValues.sortBy && formValues.sortOrder && currentSortOption) {
+      newParams.set("sortBy", formValues.sortBy);
+      newParams.set("sortOrder", formValues.sortOrder);
+    }
+
+    // Don't update URL if only the default parameters would be set
+    // This prevents adding unnecessary parameters to the URL
+    if (newParams.toString() !== currentParams.toString()) {
+      setSearchParams(newParams);
+    }
+  }, [
+    formValues.modelName,
+    formValues.type,
+    formValues.sortBy,
+    formValues.sortOrder,
+    currentSortOption,
+    setSearchParams,
+  ]);
 
   // Handle sort option change - split into sortBy and sortOrder
   const handleSortChange = (sortOption: string) => {
@@ -120,21 +162,15 @@ const CarSearchPage: React.FC = () => {
     setValue("sortOrder", sortOrder);
   };
 
-  // Get current sort option for the dropdown
-  const currentSortOption =
-    formValues.sortBy && formValues.sortOrder
-      ? `${formValues.sortBy}-${formValues.sortOrder}`
-      : "";
-
-  // Function to fetch cars
-  const fetchCars = async (data: CarSearchFormValues) => {
+  // Function to fetch cars - wrapped in useCallback to prevent unnecessary re-renders
+  const fetchCars = useCallback(async (data: CarSearchFormValues) => {
     setLoading(true);
     setError(null);
     try {
       // Clean up the data object to remove null/undefined values
       const cleanParams = Object.fromEntries(
-        Object.entries(data).filter(([_, value]) =>
-          value !== undefined && value !== null && value !== ''
+        Object.entries(data).filter(
+          ([, value]) => value !== undefined && value !== null && value !== ""
         )
       );
 
@@ -161,24 +197,57 @@ const CarSearchPage: React.FC = () => {
         setError("Invalid data format received");
         setCars([]);
       }
-    } catch (error: any) {
+    } catch (error) {
       console.error("Error fetching cars:", error);
-      setError(error?.response?.data?.message || "Failed to fetch cars. Please try again later.");
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : "Failed to fetch cars. Please try again later.";
+      setError(errorMessage);
       setCars([]);
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
   const handlePageChange = (page: number) => {
     setPagination((prev) => ({ ...prev, page }));
     fetchCars(formValues);
   };
 
+  // Create a stable debounced fetch function
+  const debouncedFetchRef =
+    useRef<(values: CarSearchFormValues) => void>(undefined);
+
+  // Initialize the debounced function once
+  useEffect(() => {
+    debouncedFetchRef.current = debounce((values: CarSearchFormValues) => {
+      if (!isResetting.current) {
+        fetchCars(values);
+      }
+    }, 300);
+  }, [fetchCars]);
+
+  // Function to call the debounced fetch
+  const debouncedFetch = useCallback((values: CarSearchFormValues) => {
+    if (debouncedFetchRef.current) {
+      debouncedFetchRef.current(values);
+    }
+  }, []);
+
   // Fetch cars when component mounts or form values change
   useEffect(() => {
-    fetchCars(formValues);
+    // Skip if we're in the middle of resetting
+    if (isResetting.current) return;
+
+    // Create a clean version of formValues without null/undefined/empty values
+    const cleanFormValues = { ...formValues };
+
+    // Use debounced fetch to prevent flickering
+    debouncedFetch(cleanFormValues);
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
+    // Only re-fetch when these specific values change
     formValues.modelName,
     formValues.type,
     formValues.location,
@@ -186,9 +255,43 @@ const CarSearchPage: React.FC = () => {
     formValues.sortOrder,
   ]);
 
-  // Reset all filters
+  // Initial fetch on component mount
+  useEffect(() => {
+    // This will run only once when the component mounts
+    fetchCars(defaultCarSearchValues);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Reset all filters with debounce to prevent flickering
   const resetFilters = () => {
-    reset(defaultCarSearchValues);
+    // Set the resetting flag to true to prevent other effects from running
+    isResetting.current = true;
+
+    // First, clear the URL parameters to prevent multiple re-renders
+    setSearchParams(new URLSearchParams());
+
+    // Then reset the form with minimal default values
+    reset({
+      modelName: "",
+      type: undefined,
+      location: undefined,
+      sortBy: undefined,
+      sortOrder: undefined,
+      page: 1,
+      limit: 10,
+    });
+
+    // Finally, fetch cars with empty parameters after a short delay
+    // This prevents multiple rapid re-renders
+    setTimeout(() => {
+      fetchCars({
+        page: 1,
+        limit: 10,
+      });
+
+      // Reset the flag after the operation is complete
+      isResetting.current = false;
+    }, 50);
   };
 
   // Toggle mobile filters
@@ -493,51 +596,4 @@ const CarSearchPage: React.FC = () => {
 
 export default CarSearchPage;
 
-export const generateMockCars = (): Car[] => {
-  const mockCars: Car[] = [];
-  const carModels = [
-    "Toyota Camry",
-    "Honda Civic",
-    "Ford F-150",
-    "BMW X5",
-    "Tesla Model 3",
-    "Mercedes C-Class",
-  ];
-  const locations = [
-    "New York, NY",
-    "Los Angeles, CA",
-    "Chicago, IL",
-    "Houston, TX",
-    "Phoenix, AZ",
-    "Philadelphia, PA",
-  ];
-
-  for (let i = 0; i < 12; i++) {
-    const randomModel = carModels[Math.floor(Math.random() * carModels.length)];
-    const randomFeatures = availableFeatures
-      .sort(() => 0.5 - Math.random())
-      .slice(0, Math.floor(Math.random() * 7) + 1);
-
-    mockCars.push({
-      _id: `car-${i}`,
-      modelName: randomModel,
-      year: Math.floor(Math.random() * (2023 - 2010 + 1)) + 2010,
-      type: Object.values(Type)[
-        Math.floor(Math.random() * Object.values(Type).length)
-      ],
-      distance: Math.floor(Math.random() * 100000),
-      discountedPrice: Math.floor(Math.random() * 30000) + 10000,
-      originalPrice: Math.floor(Math.random() * 40000) + 15000,
-      location: locations[Math.floor(Math.random() * locations.length)],
-      features: randomFeatures,
-      category:
-        availableCategories[
-          Math.floor(Math.random() * availableCategories.length)
-        ],
-      rating: Number((Math.random() * 2 + 3).toFixed(1)), // Rating between 3.0 and 5.0
-      imageUrl: [`/api/placeholder/400/240`],
-    });
-  }
-
-  return mockCars;
-};
+// Mock data moved to utils/mockData.ts

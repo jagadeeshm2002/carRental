@@ -47,14 +47,25 @@ export function SearchForm() {
   });
 
   const onSubmit = (data: z.infer<typeof searchFormSchema>) => {
-    const pickupDate = data.pickupDate.toISOString().split("T")[0]; // Format: YYYY-MM-DD
-    const returnDate = data.returnDate.toISOString().split("T")[0]; // Format: YYYY-MM-DD
+    // Only include parameters that have values
+    const params = new URLSearchParams();
 
-    navigate(
-      `/search?location=${encodeURIComponent(
-        data.location
-      )}&pickupDate=${pickupDate}&returnDate=${returnDate}`
-    );
+    // Always include location as it's required
+    params.set('location', data.location);
+
+    // Add dates if they exist
+    if (data.pickupDate) {
+      const pickupDate = data.pickupDate.toISOString().split("T")[0]; // Format: YYYY-MM-DD
+      params.set('pickupDate', pickupDate);
+    }
+
+    if (data.returnDate) {
+      const returnDate = data.returnDate.toISOString().split("T")[0]; // Format: YYYY-MM-DD
+      params.set('returnDate', returnDate);
+    }
+
+    // Navigate to search page with clean parameters
+    navigate(`/search?${params.toString()}`);
     form.reset();
   };
 
