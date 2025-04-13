@@ -56,39 +56,20 @@ const CarSearchPage: React.FC = () => {
   // Create a default values object for the form
   const defaultCarSearchValues: CarSearchFormValues = {
     modelName: searchParams.get("modelName") || "",
-    // year: searchParams.get("year")
-    //   ? Number(searchParams.get("year"))
-    //   : undefined,
-    type: (searchParams.get("type") as Type) || undefined,
-    // minDistance: searchParams.get("minDistance")
-    //   ? Number(searchParams.get("minDistance"))
-    //   : undefined,
-    // maxDistance: searchParams.get("maxDistance")
-    //   ? Number(searchParams.get("maxDistance"))
-    //   : undefined,
-    // minPrice: searchParams.get("minDiscountedPrice")
-    //   ? Number(searchParams.get("minDiscountedPrice"))
-    //   : undefined,
-    // maxPrice: searchParams.get("maxDiscountedPrice")
-    //   ? Number(searchParams.get("maxDiscountedPrice"))
-    //   : undefined,
+    // Safely parse type parameter
+    type: Object.values(Type).includes(searchParams.get("type") as Type)
+      ? (searchParams.get("type") as Type)
+      : undefined,
+    // Safely get location parameter
     location: searchParams.get("location") || undefined,
-    // features: searchParams.get("features")
-    //   ? searchParams.get("features")!.split(",")
-    //   : [],
-    sortBy:
-      searchParams.get("sortBy") !== "null"
-        ? (searchParams.get("sortBy") as
-            | "price"
-            // | "year"
-            | "rating"
-            | "distance"
-            | undefined)
-        : undefined,
-    sortOrder:
-      searchParams.get("sortOrder") !== "null"
-        ? (searchParams.get("sortOrder") as "asc" | "desc" | undefined)
-        : undefined,
+    // Safely parse sortBy parameter
+    sortBy: ["price", "rating", "distance"].includes(searchParams.get("sortBy") || "")
+      ? (searchParams.get("sortBy") as "price" | "rating" | "distance")
+      : undefined,
+    // Safely parse sortOrder parameter
+    sortOrder: ["asc", "desc"].includes(searchParams.get("sortOrder") || "")
+      ? (searchParams.get("sortOrder") as "asc" | "desc")
+      : undefined,
     page: pagination.page,
     limit: pagination.limit,
   };
@@ -109,10 +90,14 @@ const CarSearchPage: React.FC = () => {
 
     // Add non-empty values to URL params
     Object.entries(formValues).forEach(([key, value]) => {
+      // Skip pagination parameters in URL
+      if (key === 'page' || key === 'limit') return;
+
       if (
         value !== undefined &&
         value !== "" &&
-        !(Array.isArray(value) && value.length === 0)
+        !(Array.isArray(value) && value.length === 0) &&
+        value !== null // Explicitly check for null values
       ) {
         if (Array.isArray(value)) {
           newParams.set(key, value.join(","));
@@ -146,23 +131,40 @@ const CarSearchPage: React.FC = () => {
     setLoading(true);
     setError(null);
     try {
-      // In a real app, you would use the actual API endpoint
+      // Clean up the data object to remove null/undefined values
+      const cleanParams = Object.fromEntries(
+        Object.entries(data).filter(([_, value]) =>
+          value !== undefined && value !== null && value !== ''
+        )
+      );
+
+      // Make the API request with clean parameters
       const response = await Client.get("/cars", {
-        params: data,
+        params: cleanParams,
       });
-      if (!response.data) {
-        setError(response.data.error);
+
+      // Check if response exists and has data
+      if (!response || !response.data) {
+        setError("No data received from server");
+        setCars([]);
         return;
       }
 
-      setCars(response.data.cars);
-      setPagination(response.data.pagination);
-     
-    } catch (error) {
-      // For demo purposes, populate with mock data
-      setError("Failed to fetch cars. Please try again later." + error);
-      return;
-      // setCars(generateMockCars());
+      // Check if cars array exists in response
+      if (Array.isArray(response.data.cars)) {
+        setCars(response.data.cars);
+        // Set pagination if it exists
+        if (response.data.pagination) {
+          setPagination(response.data.pagination);
+        }
+      } else {
+        setError("Invalid data format received");
+        setCars([]);
+      }
+    } catch (error: any) {
+      console.error("Error fetching cars:", error);
+      setError(error?.response?.data?.message || "Failed to fetch cars. Please try again later.");
+      setCars([]);
     } finally {
       setLoading(false);
     }
@@ -177,15 +179,9 @@ const CarSearchPage: React.FC = () => {
     fetchCars(formValues);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
-    // formValues.modelName,
-    // formValues.year,
-    // formValues.type,
-    // formValues.minDistance,
-    // formValues.maxDistance,
-    // formValues.minPrice,
-    // formValues.maxPrice,
-    // formValues.location,
-    // formValues.categories,
+    formValues.modelName,
+    formValues.type,
+    formValues.location,
     formValues.sortBy,
     formValues.sortOrder,
   ]);

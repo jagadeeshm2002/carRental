@@ -1,18 +1,14 @@
 import { Router } from "express";
-import { z } from "zod";
-import User from "../models/user";
-import { userDetailsUpdate, getUserDetails } from "../controllers/user";
+import { userDetailsUpdate, getUserDetails, getUserFavorites, addToFavorites, removeFromFavorites } from "../controllers/user";
 
 const router: Router = Router();
 
 router.put("/:id", userDetailsUpdate);
 router.get("/:id", getUserDetails);
 
-router.post("/faviourites", (req, res) => {
-  const data = req.params;
-});
-router.get("/faviourites", (req, res) => {
-  res.send("faviourites");
-});
+// Favorites routes - fixed spelling from 'faviourites' to 'favorites'
+router.get("/:id/favorites", getUserFavorites);
+router.post("/:id/favorites", addToFavorites);
+router.delete("/:id/favorites/:carId", removeFromFavorites);
 
 export default router;

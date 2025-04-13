@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import { Heart } from "lucide-react";
 import { Link } from "react-router-dom";
 
-const FALLBACK_IMAGE = "";
+const FALLBACK_IMAGE = "https://placehold.co/600x400?text=No+Image";
 
 interface ICar {
   _id: string;
@@ -31,14 +31,28 @@ const Favourites = () => {
     const fetchFavourites = async () => {
       try {
         setIsLoading(true);
-        const response = await Client.get(`/users/${user?.id}/favourites`, {
+        // Changed endpoint from 'favourites' to 'favorites' to match server spelling
+        const response = await Client.get(`/users/${user?.id}/favorites`, {
           signal: abortController.signal
         });
-        setFavourites(response.data);
+
+        // Check if response.data exists and has the expected format
+        if (response.data && Array.isArray(response.data.cars)) {
+          setFavourites(response.data.cars);
+        } else if (response.data && Array.isArray(response.data)) {
+          setFavourites(response.data);
+        } else {
+          // Handle unexpected response format
+          console.error('Unexpected response format:', response.data);
+          setFavourites([]);
+          toast.error("Received invalid data format from server");
+        }
       } catch (error: any) {
         if (error.name !== 'CanceledError') {
+          console.error('Error fetching favorites:', error);
           const errorMessage = error.response?.data?.message || "Failed to fetch favourites";
           toast.error(errorMessage);
+          setFavourites([]); // Ensure we set an empty array on error
         }
       } finally {
         setIsLoading(false);
@@ -47,6 +61,8 @@ const Favourites = () => {
 
     if (user?.id) {
       fetchFavourites();
+    } else {
+      setIsLoading(false); // Set loading to false if no user ID
     }
 
     return () => {
@@ -56,10 +72,17 @@ const Favourites = () => {
 
   const removeFavourite = async (carId: string) => {
     try {
-      await Client.delete(`/users/${user?.id}/favourites/${carId}`);
+      if (!user?.id) {
+        toast.error("You must be logged in to remove favorites");
+        return;
+      }
+
+      // Changed endpoint from 'favourites' to 'favorites' to match server spelling
+      await Client.delete(`/users/${user.id}/favorites/${carId}`);
       setFavourites(prev => prev.filter(car => car._id !== carId));
       toast.success("Removed from favourites");
     } catch (error: any) {
+      console.error('Error removing favorite:', error);
       const errorMessage = error.response?.data?.message || "Failed to remove from favourites";
       toast.error(errorMessage);
     }
@@ -84,7 +107,7 @@ const Favourites = () => {
           <p className="mt-1 text-sm text-gray-500">Start adding cars to your favourites.</p>
           <div className="mt-6">
             <Link
-              to="/cars"
+              to="/search"
               className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
             >
               Browse Cars
