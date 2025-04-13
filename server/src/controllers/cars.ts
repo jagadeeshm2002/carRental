@@ -63,7 +63,7 @@ export const getCars = async (req: Request, res: Response) => {
 
     // Text matching queries
     if (modelName) query.modelName = { $regex: modelName, $options: "i" }; // Case-insensitive partial match
-    if (type) query.type = type;
+    if (type && type !== "any") query.type = type;
     if (location) query.location = { $regex: location, $options: "i" }; // Case-insensitive partial match
     // if (category) query.category = { $regex: category, $options: "i" }; // Case-insensitive partial match
     if (year) query.year = year;
