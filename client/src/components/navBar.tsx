@@ -183,7 +183,7 @@ const NavItem: {
   link: string;
 }[] = [
   { name: "Cars deals", link: "/search" },
-  { name: "About us", link: "#" },
-  { name: "Help", link: "#" },
+  { name: "About us", link: "/about" },
+  { name: "Contact", link: "/contact" },
 ];
 export default NavBar;

@@ -62,7 +62,7 @@ export const userGetOrders = async (req: Request, res: Response) => {
   }
 
   try {
-    const orders = await Order.find({ user: id });
+    const orders = await Order.find({ user: id }).populate('car');
     if (!orders) {
       return res.status(404).json({ message: "Orders not found" });
     }

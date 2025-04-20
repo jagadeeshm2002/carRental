@@ -17,6 +17,10 @@ import OwnerOrders from "./pages/owner/orders";
 import OwnerProfile from "./pages/owner/ownerProfile";
 import Cars from "./pages/owner/cars";
 import CreateCarList from "./pages/owner/createCarList";
+import AboutUs from "./pages/AboutUs";
+import ContactUs from "./pages/ContactUs";
+import Terms from "./pages/Terms";
+import Privacy from "./pages/Privacy";
 
 function App() {
   const { user, isLoggedIn } = useGlobalContext();
@@ -31,6 +35,10 @@ function App() {
           <Route path="/cars/:id" element={<CarView />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/about" element={<AboutUs />} />
+          <Route path="/contact" element={<ContactUs />} />
+          <Route path="/terms" element={<Terms />} />
+          <Route path="/privacy" element={<Privacy />} />
 
           {/* Authenticated User Routes */}
           {isLoggedIn && user?.role === "user" && (
