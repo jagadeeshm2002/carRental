@@ -4,9 +4,6 @@ import {
   Building,
   Users,
   Trophy,
-  MapPin,
-  Phone,
-  Mail,
 } from "lucide-react";
 
 import CarImage from "../assets/images/car.png";
